@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Lab barcode scanner · Ticket Bench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../bench/v1/bench.css">
+</head>
+<body>
+<div id="bench"></div>
+<script type="application/json" id="scenario">
+{
+ "id": "itm1-u8-lab-scanner-bluetooth",
+ "course": "Unit 8",
+ "ticket": "Ticket 2",
+ "device": "Lab barcode scanner",
+ "reportedBy": "Marcus Bell, the medical assistant who draws blood",
+ "report": "The barcode scanner won't work with the new lab iPad. I scan a patient's wristband and nothing shows up, so I'm typing every number by hand.",
+ "arrival": [
+  "The lab corner has a handheld barcode scanner that connects to an iPad over Bluetooth. Scanning a wristband fills in the patient number in the lab app.",
+  "The clinic replaced the lab's old iPad with a new one last Thursday."
+ ],
+ "hypotheses": [
+  {
+   "id": "battery",
+   "label": "The scanner's battery is dead",
+   "name": "a dead battery"
+  },
+  {
+   "id": "paired",
+   "label": "The scanner is still paired with the old iPad",
+   "name": "the old pairing"
+  },
+  {
+   "id": "btoff",
+   "label": "Bluetooth is turned off on the new iPad",
+   "name": "Bluetooth being turned off"
+  },
+  {
+   "id": "range",
+   "label": "Something is blocking the signal between them",
+   "name": "interference or distance"
+  }
+ ],
+ "groups": [
+  {
+   "id": "ask",
+   "label": "Ask Marcus",
+   "needsHypothesis": false
+  },
+  {
+   "id": "look",
+   "label": "Look and check",
+   "needsHypothesis": true
+  },
+  {
+   "id": "act",
+   "label": "Make a change",
+   "needsHypothesis": true,
+   "needsRealHypothesis": true
+  }
+ ],
+ "actions": [
+  {
+   "id": "ask-what",
+   "group": "ask",
+   "label": "What happens when you pull the trigger?",
+   "value": "useful",
+   "result": "\"It beeps, and the red line comes on. It just never shows up on the iPad.\"",
+   "note": "The scanner has power and reads the barcode, so a dead battery is unlikely. The number isn't reaching the iPad, which fits the other causes.",
+   "pointsTo": null,
+   "weakens": [
+    "battery"
+   ]
+  },
+  {
+   "id": "ask-change",
+   "group": "ask",
+   "label": "Has anything changed?",
+   "value": "key",
+   "result": "\"Only the new iPad. The scanner worked fine with the old one right up until Thursday. The old iPad's in the supply drawer.\"",
+   "note": "The scanner stopped working the day the iPad was swapped, and the old iPad is still around. A Bluetooth accessory like this usually stays paired with the device it was set up with.",
+   "pointsTo": "paired"
+  },
+  {
+   "id": "look-battery",
+   "group": "look",
+   "label": "Check the scanner's battery light",
+   "value": "low",
+   "result": "The battery light is solid green. Marcus charges it on its stand every night.",
+   "note": "The battery is charged, which rules it out. This doesn't point to another cause.",
+   "pointsTo": null,
+   "rulesOut": [
+    "battery"
+   ]
+  },
+  {
+   "id": "look-bt",
+   "group": "look",
+   "label": "Open Settings, then Bluetooth, on the new iPad",
+   "value": "useful",
+   "result": "Bluetooth is on. The lab keyboard shows Connected under My Devices. The scanner isn't listed under My Devices or Other Devices.",
+   "note": "Bluetooth is on and working, since the keyboard connects. The iPad can't see the scanner at all, which means the scanner isn't offering to pair. That doesn't say why yet.",
+   "pointsTo": null,
+   "rulesOut": [
+    "btoff"
+   ]
+  },
+  {
+   "id": "look-close",
+   "group": "look",
+   "label": "Hold the scanner right next to the iPad and check again",
+   "value": "low",
+   "result": "With the scanner touching the iPad, it still doesn't appear in the Bluetooth list.",
+   "note": "Distance and interference aren't the problem. This rules them out without pointing to another cause.",
+   "pointsTo": null,
+   "rulesOut": [
+    "range"
+   ]
+  },
+  {
+   "id": "look-guide",
+   "group": "look",
+   "label": "Read the scanner's quick start guide",
+   "value": "useful",
+   "result": "\"The scanner connects to one host at a time. To pair with a new host, scan the Unpair barcode, then the Pairing Mode barcode. The blue light blinks quickly while the scanner is ready to pair.\"",
+   "note": "Now you know how to put it in pairing mode, and that it only connects to one device at a time. The guide doesn't tell you which cause this is.",
+   "pointsTo": null
+  },
+  {
+   "id": "look-old",
+   "group": "look",
+   "label": "Turn on the old iPad and open its Bluetooth settings",
+   "value": "key",
+   "result": "As soon as the old iPad wakes up, its Bluetooth list shows the scanner as Connected. A test scan types a number into the old iPad's notes app.",
+   "note": "This is the check that decides it. The scanner is still connected to the old iPad, so it isn't available to pair with the new one.",
+   "pointsTo": "paired"
+  },
+  {
+   "id": "act-new",
+   "group": "act",
+   "label": "Order a replacement scanner",
+   "value": "premature",
+   "refusal": "Not yet. The scanner powers on and reads barcodes. Nothing you've found shows it's broken."
+  },
+  {
+   "id": "act-reset",
+   "group": "act",
+   "label": "Reset the new iPad's network settings",
+   "value": "premature",
+   "refusal": "Not yet. The iPad's Bluetooth works with the keyboard, and a reset would erase its saved Wi-Fi networks too. Find the cause first."
+  }
+ ],
+ "minFindingsToDiagnose": 2,
+ "diagnosis": {
+  "correct": "paired",
+  "feedback": {
+   "battery": "The scanner beeps, lights up, and shows a solid green battery light.",
+   "btoff": "Bluetooth is on, and the lab keyboard is connected to the new iPad.",
+   "range": "The scanner doesn't show up even when it's touching the iPad."
+  },
+  "keyEvidence": [
+   "look-old"
+  ],
+  "evidenceFeedback": "Pick the check that shows the old pairing: the old iPad listing the scanner as Connected. The timing of the iPad swap helps, but a check has to back it up."
+ },
+ "fixes": [
+  {
+   "id": "repair",
+   "label": "Scan the scanner's Unpair barcode, then its Pairing Mode barcode, and pair it with the new iPad in Settings, Bluetooth; then tap Forget This Device for the scanner on the old iPad",
+   "correct": true
+  },
+  {
+   "id": "keepold",
+   "label": "Keep the old iPad turned on in the lab so the scanner works",
+   "feedback": "That leaves the lab app on the new iPad still typing by hand, and an extra device with patient data sitting out. Move the pairing to the new iPad."
+  },
+  {
+   "id": "newscanner",
+   "label": "Order a new scanner for the new iPad",
+   "feedback": "The scanner works; it's paired with the wrong iPad. Moving the pairing costs nothing."
+  },
+  {
+   "id": "forgetonly",
+   "label": "On the new iPad, turn Bluetooth off and on again",
+   "feedback": "The new iPad isn't the problem. The scanner won't offer to pair until it's released from the old iPad, using the Unpair barcode in its guide."
+  }
+ ],
+ "verify": "The new iPad lists the scanner as Connected under My Devices. Marcus scans the test barcode on the lab's practice label, and the test patient number fills in on the lab app. The old iPad no longer lists the scanner.",
+ "prevention": [
+  {
+   "id": "retire",
+   "label": "Add a step to the routine for retiring a device: forget its Bluetooth accessories before putting it away",
+   "good": true,
+   "feedback": "Yes. Any accessory paired with an old device will do this again."
+  },
+  {
+   "id": "label",
+   "label": "Put a small label on the scanner naming the iPad it's paired with",
+   "good": true,
+   "feedback": "Yes. The next person to look at it knows where to check first."
+  },
+  {
+   "id": "btoff",
+   "label": "Keep Bluetooth turned off on the clinic's iPads except when pairing",
+   "good": false,
+   "feedback": "No. The scanner and keyboard need Bluetooth on to work."
+  },
+  {
+   "id": "spare",
+   "label": "Buy a spare scanner for each iPad",
+   "good": false,
+   "feedback": "No. One scanner works fine once it's paired with the right iPad."
+  }
+ ],
+ "debrief": {
+  "summary": "The scanner was still paired and connected to the old iPad in the supply drawer. This scanner connects to one device at a time, so it never offered to pair with the new one until it was unpaired with its own Unpair barcode.",
+  "mostInformative": [
+   "What changed: the scanner stopped the day the iPad was swapped.",
+   "The new iPad's Bluetooth list: Bluetooth works there, but the scanner isn't offering to pair.",
+   "The old iPad: the scanner shows as Connected there. That's the check that decides it."
+  ],
+  "note": "Holding the scanner next to the iPad was a quick way to rule out distance before opening anything else."
+ },
+ "reflection": [
+  "What was your first working hypothesis, and what made you keep it or change it?",
+  "Which check decided it, and what evidence justified your fix?",
+  "Which kind of connection does the scanner use, and why did it fail?"
+ ],
+ "ticketNote": null
+}
+</script>
+<script src="../bench/v1/bench.js"></script>
+</body>
+</html>

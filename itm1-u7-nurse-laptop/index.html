@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Nurse&#x27;s laptop · Ticket Bench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../bench/v1/bench.css">
+</head>
+<body>
+<div id="bench"></div>
+<script type="application/json" id="scenario">
+{
+ "id": "itm1-u7-nurse-laptop",
+ "course": "Unit 7",
+ "ticket": "Ticket 4",
+ "device": "Nurse's laptop",
+ "reportedBy": "Sam Whitaker, a nurse who moves between exam rooms with a laptop on a cart",
+ "report": "It's on the charger all night, but it's dead by lunch. It used to last my whole shift. I've had it about four years.",
+ "arrival": [
+  "The laptop is on its cart, unplugged, at 64% after two hours of use.",
+  "The other nurses use the same model, bought at the same time."
+ ],
+ "hypotheses": [
+  {
+   "id": "battery",
+   "label": "The battery is worn out",
+   "name": "a worn-out battery"
+  },
+  {
+   "id": "program",
+   "label": "A program is draining the battery",
+   "name": "a program using too much power"
+  },
+  {
+   "id": "charger",
+   "label": "The charger isn't charging it fully",
+   "name": "the charger"
+  },
+  {
+   "id": "settings",
+   "label": "The power settings use too much power",
+   "name": "the power settings"
+  }
+ ],
+ "groups": [
+  {
+   "id": "ask",
+   "label": "Ask Sam",
+   "needsHypothesis": false
+  },
+  {
+   "id": "look",
+   "label": "Look and check",
+   "needsHypothesis": true
+  },
+  {
+   "id": "act",
+   "label": "Make a change",
+   "needsHypothesis": true,
+   "needsRealHypothesis": true
+  }
+ ],
+ "actions": [
+  {
+   "id": "ask-when",
+   "group": "ask",
+   "label": "When did you first notice it?",
+   "value": "key",
+   "result": "\"It's been getting worse for months. Last spring it lasted all day. Now I'm hunting for an outlet by eleven.\"",
+   "note": "A slow decline over months is how a battery wears out. A new program or a changed setting would usually make it drop off suddenly.",
+   "pointsTo": "battery",
+   "weakens": [
+    "program",
+    "settings"
+   ]
+  },
+  {
+   "id": "ask-new",
+   "group": "ask",
+   "label": "Have you installed anything or changed any settings?",
+   "value": "useful",
+   "result": "\"No. IT set it up, and I just use the charting program and the browser.\"",
+   "note": "Nothing new makes a program or a changed setting less likely, though it doesn't rule them out. It doesn't point to one cause.",
+   "pointsTo": null,
+   "weakens": [
+    "program",
+    "settings"
+   ]
+  },
+  {
+   "id": "look-charge",
+   "group": "look",
+   "label": "Check that it charges to 100%",
+   "value": "useful",
+   "result": "The charger's light comes on when it's plugged in, and the battery icon shows 100% each morning, according to Sam and the overnight history in Settings.",
+   "note": "The charger is doing its job, so that cause is ruled out. A full charge that doesn't last fits several causes.",
+   "pointsTo": null,
+   "rulesOut": [
+    "charger"
+   ]
+  },
+  {
+   "id": "look-usage",
+   "group": "look",
+   "label": "Look at battery usage by app in Settings",
+   "value": "useful",
+   "result": "The charting program and the browser use most of the battery, the same pattern as on another nurse's laptop. No background program stands out.",
+   "note": "Sam's laptop uses power the same way as the others, so no program is draining it. It doesn't point to one of the other causes.",
+   "pointsTo": null,
+   "rulesOut": [
+    "program"
+   ]
+  },
+  {
+   "id": "look-settings",
+   "group": "look",
+   "label": "Check the brightness and power mode",
+   "value": "low",
+   "result": "Brightness is at 50% and the power mode is Balanced, the same as on the other nurses' laptops.",
+   "note": "Sam's settings match laptops that last a full shift, so they aren't the problem. This doesn't point anywhere else.",
+   "pointsTo": null,
+   "rulesOut": [
+    "settings"
+   ]
+  },
+  {
+   "id": "look-report",
+   "group": "look",
+   "label": "Run a battery report (powercfg /batteryreport)",
+   "value": "key",
+   "result": "Design capacity: 54,000 mWh. Full charge capacity: 17,800 mWh. Cycle count: 1,140. (mWh, milliwatt-hours, measures how much charge the battery holds.)",
+   "note": "This is the check that decides it. The battery now holds about a third of the charge it held when new.",
+   "pointsTo": "battery"
+  },
+  {
+   "id": "look-case",
+   "group": "look",
+   "label": "Check the battery for swelling",
+   "value": "useful",
+   "result": "The laptop sits flat on the desk, the case isn't bulging, and the touchpad clicks normally.",
+   "note": "No swelling means the battery is safe to keep using until a new one arrives. A bulging battery would need to come out right away. This doesn't point to one cause.",
+   "pointsTo": null
+  },
+  {
+   "id": "act-saver",
+   "group": "act",
+   "label": "Turn on battery saver and test it for an hour",
+   "value": "low",
+   "result": "With battery saver on, the laptop drops from 64% to 41% in an hour of charting, about the same as before.",
+   "note": "Saving power barely changed how fast it drains, so the settings aren't the problem. This doesn't point to one cause on its own.",
+   "pointsTo": null,
+   "rulesOut": [
+    "settings"
+   ]
+  },
+  {
+   "id": "act-reinstall",
+   "group": "act",
+   "label": "Reinstall Windows",
+   "value": "premature",
+   "refusal": "Not yet. Reinstalling wipes the laptop's setup and takes hours away from Sam's shift, and nothing you've found points to software."
+  },
+  {
+   "id": "act-charger",
+   "group": "act",
+   "label": "Replace the charger",
+   "value": "premature",
+   "refusal": "Not yet. The laptop charges to 100%, so the charger is working. A new one won't change how long the charge lasts."
+  }
+ ],
+ "minFindingsToDiagnose": 2,
+ "diagnosis": {
+  "correct": "battery",
+  "feedback": {
+   "program": "Battery usage looks the same as on the other nurses' laptops, and Sam hasn't installed anything.",
+   "charger": "The laptop charges to 100% every night, so the charger works. The problem is how long the charge lasts.",
+   "settings": "Sam's brightness and power mode match laptops that last a full shift, and battery saver barely helped."
+  },
+  "keyEvidence": [
+   "look-report"
+  ],
+  "evidenceFeedback": "Pick the check that shows the battery specifically: the battery report. What Sam told you helps, but a check has to back it up."
+ },
+ "fixes": [
+  {
+   "id": "replace",
+   "label": "Order a replacement battery from the laptop's maker, and keep the charger on the cart until it arrives",
+   "correct": true
+  },
+  {
+   "id": "saver",
+   "label": "Leave battery saver on and lower the brightness",
+   "feedback": "That helps a little, but a battery that holds a third of its charge still won't last a shift. Replace the battery."
+  },
+  {
+   "id": "newlaptop",
+   "label": "Replace the whole laptop",
+   "feedback": "The rest of the laptop works fine and matches the other nurses'. A new battery fixes this for much less."
+  },
+  {
+   "id": "drain",
+   "label": "Drain the battery completely and recharge it to recalibrate it",
+   "feedback": "That can correct the percentage the battery shows, but it doesn't bring back lost capacity. The battery report already shows the real capacity."
+  }
+ ],
+ "verify": "With the new battery in, a battery report shows a full charge capacity of 53,600 mWh. Sam works a full shift on the cart and finishes with 30% left.",
+ "prevention": [
+  {
+   "id": "yearly",
+   "label": "Run battery reports on the clinic's laptops once a year and replace batteries before they fail a shift",
+   "good": true,
+   "feedback": "Yes. The other nurses' laptops are the same age, so their batteries are likely wearing too."
+  },
+  {
+   "id": "care",
+   "label": "Turn on the maker's battery-care setting, if it has one, that stops charging short of 100% when the laptop is plugged in for long stretches",
+   "good": true,
+   "feedback": "Yes. Sitting at a full charge for hours wears a battery faster."
+  },
+  {
+   "id": "weekly-drain",
+   "label": "Drain the battery completely every week",
+   "good": false,
+   "feedback": "No. Deep drains wear a modern battery faster, not slower."
+  },
+  {
+   "id": "unplug",
+   "label": "Never charge it overnight",
+   "good": false,
+   "feedback": "No. Sam needs a full charge to start the shift. A battery-care setting handles long charging better."
+  }
+ ],
+ "debrief": {
+  "summary": "The battery is worn out after about four years. It now holds about a third of the charge it held when new, so a full charge doesn't last until lunch.",
+  "mostInformative": [
+   "When it started: a slow decline over months is how batteries wear out.",
+   "Battery usage compared with another nurse's laptop: it ruled out a program draining the battery.",
+   "The battery report: a full charge capacity of 17,800 mWh against 54,000 mWh when new is the check that decides it."
+  ],
+  "note": "The swelling check doesn't find the cause, but it's worth doing on any old battery, because a swollen one is a safety problem."
+ },
+ "reflection": [
+  "What was your first working hypothesis, and what made you keep it or change it?",
+  "Which check decided it, and what evidence justified your fix?"
+ ],
+ "ticketNote": null
+}
+</script>
+<script src="../bench/v1/bench.js"></script>
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Billing office printer · Ticket Bench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../bench/v1/bench.css">
+</head>
+<body>
+<div id="bench"></div>
+<script type="application/json" id="scenario">
+{
+ "id": "itm1-u7-billing-printer",
+ "course": "Unit 7",
+ "ticket": "Ticket 3",
+ "device": "Billing office printer",
+ "reportedBy": "Jen Alvarez, in the billing office",
+ "report": "I've sent the same claim form three times, and nothing comes out. Mark's reports printed fine this morning.",
+ "arrival": [
+  "The billing office shares one network laser printer between Jen and Mark.",
+  "Jen's computer is on, with the claim form open."
+ ],
+ "hypotheses": [
+  {
+   "id": "printer",
+   "label": "The printer has a hardware or supply problem",
+   "name": "the printer itself"
+  },
+  {
+   "id": "queue",
+   "label": "A stuck job is blocking Jen's print queue",
+   "name": "a stuck print job"
+  },
+  {
+   "id": "driver",
+   "label": "Jen's printer driver is damaged",
+   "name": "Jen's printer driver"
+  },
+  {
+   "id": "wrong",
+   "label": "Jen is sending her forms to the wrong printer",
+   "name": "the wrong printer"
+  }
+ ],
+ "groups": [
+  {
+   "id": "ask",
+   "label": "Ask Jen",
+   "needsHypothesis": false
+  },
+  {
+   "id": "look",
+   "label": "Look and check",
+   "needsHypothesis": true
+  },
+  {
+   "id": "act",
+   "label": "Make a change",
+   "needsHypothesis": true,
+   "needsRealHypothesis": true
+  }
+ ],
+ "actions": [
+  {
+   "id": "ask-mark",
+   "group": "ask",
+   "label": "Can Mark print right now?",
+   "value": "useful",
+   "result": "Mark sends a page from the next desk, and it comes out a few seconds later.",
+   "note": "The printer prints for Mark, so a problem with the printer itself is unlikely. That points to something on Jen's computer, but not yet to one cause.",
+   "pointsTo": null,
+   "weakens": [
+    "printer"
+   ]
+  },
+  {
+   "id": "ask-earlier",
+   "group": "ask",
+   "label": "Did you print anything else today?",
+   "value": "key",
+   "result": "\"The month-end report, first thing this morning. It's long, and it never came out. I figured it went to the front desk printer.\"",
+   "note": "A big job that never came out, sent before the trouble started, is a sign that it's stuck and holding up everything behind it.",
+   "pointsTo": "queue"
+  },
+  {
+   "id": "look-display",
+   "group": "look",
+   "label": "Look at the printer's display, paper and toner",
+   "value": "low",
+   "result": "The display says Ready, with no error. The paper tray is full, and the toner shows 60%.",
+   "note": "No errors and plenty of supplies rule out a supply problem. It doesn't point to another cause.",
+   "pointsTo": null,
+   "weakens": [
+    "printer"
+   ]
+  },
+  {
+   "id": "look-config",
+   "group": "look",
+   "label": "Print a configuration page from the printer's control panel",
+   "value": "useful",
+   "result": "A configuration page comes out clean, with the printer's IP address and settings.",
+   "note": "The printer works on its own, with no computer involved, which rules out the printer. The problem is between Jen's computer and the printer.",
+   "pointsTo": null,
+   "rulesOut": [
+    "printer"
+   ]
+  },
+  {
+   "id": "look-default",
+   "group": "look",
+   "label": "Check which printer Jen's forms go to",
+   "value": "useful",
+   "result": "In Printers & scanners, the billing office printer is set as the default and shows Ready. The print dialog in the claims program has it selected too.",
+   "note": "Jen is sending to the right printer, so that cause is ruled out. It doesn't point to one of the others.",
+   "pointsTo": null,
+   "rulesOut": [
+    "wrong"
+   ]
+  },
+  {
+   "id": "look-queue",
+   "group": "look",
+   "label": "Open the print queue on Jen's computer",
+   "value": "key",
+   "result": "At the top of the queue is a 48-page job from 8:12 this morning, marked \"Error - Printing.\" Jen's three claim forms are waiting behind it.",
+   "note": "This is the check that decides it. The stuck job at the top is holding up everything behind it.",
+   "pointsTo": "queue"
+  },
+  {
+   "id": "look-driver",
+   "group": "look",
+   "label": "Check the printer driver in Printers & scanners",
+   "value": "low",
+   "result": "Jen's computer uses the same driver version as Mark's, installed in the spring. Windows reports no problems with it.",
+   "note": "The driver matches the one that works on Mark's computer, so a damaged driver is unlikely. It doesn't point anywhere else.",
+   "pointsTo": null,
+   "weakens": [
+    "driver"
+   ]
+  },
+  {
+   "id": "act-restart-printer",
+   "group": "act",
+   "label": "Turn the printer off and back on",
+   "value": "low",
+   "result": "The printer restarts and shows Ready. Jen's forms still don't come out.",
+   "note": "Restarting the printer didn't help, and it interrupted Mark too. The problem isn't in the printer, but this doesn't say where it is.",
+   "pointsTo": null,
+   "rulesOut": [
+    "printer"
+   ]
+  },
+  {
+   "id": "act-reinstall",
+   "group": "act",
+   "label": "Reinstall the printer driver on Jen's computer",
+   "value": "premature",
+   "refusal": "Not yet. Reinstalling the driver takes time, and nothing you've found shows the driver is the problem. Find the cause first."
+  },
+  {
+   "id": "act-toner",
+   "group": "act",
+   "label": "Replace the toner cartridge",
+   "value": "premature",
+   "refusal": "Not yet. The toner shows 60%, and the printer prints for Mark. A new cartridge won't help."
+  }
+ ],
+ "minFindingsToDiagnose": 2,
+ "diagnosis": {
+  "correct": "queue",
+  "feedback": {
+   "printer": "The printer prints Mark's pages and its own configuration page, and it shows no errors. The printer is working.",
+   "driver": "A damaged driver usually shows an error or garbled pages, and Jen's driver matches the one working on Mark's computer.",
+   "wrong": "Jen's computer sends to the billing office printer, and it's set as her default."
+  },
+  "keyEvidence": [
+   "look-queue"
+  ],
+  "evidenceFeedback": "Pick the check that shows the stuck job: Jen's print queue. What Jen told you helps, but a check has to back it up."
+ },
+ "fixes": [
+  {
+   "id": "cancel",
+   "label": "Cancel the stuck job in Jen's print queue, then send the claim form and the month-end report again",
+   "correct": true
+  },
+  {
+   "id": "spooler",
+   "label": "Restart the Print Spooler service right away",
+   "feedback": "That clears a queue that won't cancel, but it throws out everything waiting, including Jen's forms. Try canceling the stuck job first, and restart the spooler only if it won't go."
+  },
+  {
+   "id": "reboot",
+   "label": "Restart Jen's computer",
+   "feedback": "That often clears a stuck queue, but it interrupts Jen's work and leaves you not knowing what went wrong. Cancel the stuck job directly."
+  },
+  {
+   "id": "newdriver",
+   "label": "Reinstall the printer driver",
+   "feedback": "The driver is fine. The stuck job would still be sitting in the queue afterward."
+  }
+ ],
+ "verify": "The print queue is empty. A Windows test page and Jen's claim form both print, and the month-end report, sent again, prints all 48 pages. Mark can still print from his desk.",
+ "prevention": [
+  {
+   "id": "show",
+   "label": "Show Jen how to open her print queue and cancel a stuck job",
+   "good": true,
+   "feedback": "Yes. Next time she can clear it herself in a minute."
+  },
+  {
+   "id": "check",
+   "label": "Ask Jen to check the queue before sending a job again",
+   "good": true,
+   "feedback": "Yes. Sending the same job again only adds to the pile behind a stuck one."
+  },
+  {
+   "id": "second",
+   "label": "Install a second printer just for Jen",
+   "good": false,
+   "feedback": "No. The printer works fine. A stuck job can happen on any printer."
+  },
+  {
+   "id": "nightly",
+   "label": "Turn the printer off every night",
+   "good": false,
+   "feedback": "No. The stuck job was on Jen's computer, not the printer."
+  }
+ ],
+ "debrief": {
+  "summary": "The month-end report got stuck at the top of Jen's print queue this morning, and her claim forms were waiting behind it. The printer and Jen's settings were fine.",
+  "mostInformative": [
+   "Mark printing fine: it moved the problem from the printer to Jen's computer.",
+   "The month-end report that never came out: it's the stuck job.",
+   "Jen's print queue: the job marked \"Error - Printing\" at the top is the check that decides it."
+  ],
+  "note": "The configuration page was a good way to prove the printer works without any computer involved."
+ },
+ "reflection": [
+  "What was your first working hypothesis, and what made you keep it or change it?",
+  "Which check decided it, and what evidence justified your fix?"
+ ],
+ "ticketNote": null
+}
+</script>
+<script src="../bench/v1/bench.js"></script>
+</body>
+</html>

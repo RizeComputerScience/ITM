@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Front desk computer · Ticket Bench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../bench/v1/bench.css">
+</head>
+<body>
+<div id="bench"></div>
+<script type="application/json" id="scenario">
+{
+ "id": "itm1-u7-front-desk-computer",
+ "course": "Unit 7",
+ "ticket": "Ticket 2",
+ "device": "Front desk computer",
+ "reportedBy": "Tony Russo, at the front desk",
+ "report": "The computer keeps turning itself off. It happened three times yesterday afternoon and once already this afternoon. When I turn it back on, it works for a while.",
+ "arrival": [
+  "The computer is on and working right now.",
+  "It's a desktop tower on the floor under the front counter."
+ ],
+ "hypotheses": [
+  {
+   "id": "heat",
+   "label": "The processor is overheating",
+   "name": "overheating"
+  },
+  {
+   "id": "psu",
+   "label": "The power supply is failing",
+   "name": "a failing power supply"
+  },
+  {
+   "id": "windows",
+   "label": "Windows is crashing (a software problem)",
+   "name": "a Windows problem"
+  },
+  {
+   "id": "drive",
+   "label": "The drive is failing",
+   "name": "a failing drive"
+  }
+ ],
+ "groups": [
+  {
+   "id": "ask",
+   "label": "Ask Tony",
+   "needsHypothesis": false
+  },
+  {
+   "id": "look",
+   "label": "Look and check",
+   "needsHypothesis": true
+  },
+  {
+   "id": "act",
+   "label": "Make a change",
+   "needsHypothesis": true,
+   "needsRealHypothesis": true
+  }
+ ],
+ "actions": [
+  {
+   "id": "ask-when",
+   "group": "ask",
+   "label": "When does it happen?",
+   "value": "key",
+   "result": "\"Afternoons. Usually an hour or two after lunch. Mornings are fine.\"",
+   "note": "A pattern tied to the time of day points to something in the room that changes, like temperature. A failing part or a software fault would show up at any hour.",
+   "pointsTo": "heat",
+   "weakens": [
+    "psu",
+    "windows",
+    "drive"
+   ]
+  },
+  {
+   "id": "ask-change",
+   "group": "ask",
+   "label": "Has anything changed lately?",
+   "value": "key",
+   "result": "\"Nothing new on the computer. We did start running a little space heater under the desk a couple of weeks ago, when it got cold.\"",
+   "note": "No new software makes a Windows problem less likely, and the heater started about when the shutdowns did.",
+   "pointsTo": "heat",
+   "weakens": [
+    "windows"
+   ]
+  },
+  {
+   "id": "ask-screen",
+   "group": "ask",
+   "label": "What's on the screen when it shuts off?",
+   "value": "useful",
+   "result": "\"No message. The screen just goes black and the fans stop. It comes back when I press the power button.\"",
+   "note": "No message and no restart makes a Windows crash or a failing drive less likely. The power simply cutting off fits heat and a failing power supply equally well, so this narrows the list without pointing to one.",
+   "pointsTo": null,
+   "weakens": [
+    "windows",
+    "drive"
+   ]
+  },
+  {
+   "id": "look-desk",
+   "group": "look",
+   "label": "Look around the workstation",
+   "value": "key",
+   "result": "The tower sits in the corner, about two inches from the wall. A small space heater sits a foot away, pointed at the chair. The air intake on the front of the case is gray with dust.",
+   "note": "Warm air from the heater, a blocked intake and no room to breathe all make the inside of the case hotter. The heat could also reach the power supply, so keep that in mind until a test separates them.",
+   "pointsTo": "heat"
+  },
+  {
+   "id": "look-events",
+   "group": "look",
+   "label": "Check Event Viewer for the shutdowns",
+   "value": "useful",
+   "forbiddenWhen": "unplugged",
+   "forbiddenText": "The computer is off. Plug it back in and start it first.",
+   "result": "System log: four Kernel-Power errors (Event ID 41), \"The system has rebooted without cleanly shutting down first.\" All four are between 1:40 and 3:15 p.m. None has a stop code from a crash.",
+   "note": "Event ID 41 says the power cut out without a clean shutdown. It doesn't say why, so it doesn't point to one cause. The missing stop code does make a Windows crash less likely.",
+   "pointsTo": null,
+   "weakens": [
+    "windows"
+   ]
+  },
+  {
+   "id": "look-temp",
+   "group": "look",
+   "label": "Watch the processor temperature while Tony works",
+   "value": "key",
+   "forbiddenWhen": "unplugged",
+   "forbiddenText": "The computer is off. Plug it back in and start it first.",
+   "result": "HWMonitor, with the heater on: 71 °C at idle, then climbing past 100 °C within ten minutes of normal front-desk work. The computer shuts off at 104 °C.",
+   "note": "This is the test that decides it. The shutdown comes right as the processor reaches its limit, which is the computer protecting itself from heat.",
+   "pointsTo": "heat",
+   "weakens": [
+    "psu"
+   ]
+  },
+  {
+   "id": "act-unplug",
+   "group": "act",
+   "label": "Shut it down and unplug it",
+   "value": "setup",
+   "sets": "unplugged",
+   "repeatable": true,
+   "hiddenWhen": "unplugged",
+   "result": "Shut down from the Start menu, unplugged the power cord, and held the power button for five seconds to drain what was left."
+  },
+  {
+   "id": "act-replug",
+   "group": "act",
+   "label": "Close the case, plug it back in and start it",
+   "value": "setup",
+   "clears": "unplugged",
+   "repeatable": true,
+   "shownWhen": "unplugged",
+   "result": "Side panel on, power cord back in, and the computer starts normally."
+  },
+  {
+   "id": "look-inside",
+   "group": "look",
+   "label": "Open the case and look at the cooling",
+   "value": "key",
+   "requires": "unplugged",
+   "requiresText": "Shut it down and unplug it before you open the case.",
+   "result": "The fins of the processor cooler are packed with gray dust, and the case fan's blades are coated. The cooler's fan spins freely when you turn it by hand.",
+   "note": "Dust in the fins keeps the cooler from carrying heat away, even with its fan spinning.",
+   "pointsTo": "heat"
+  },
+  {
+   "id": "look-meter",
+   "group": "look",
+   "label": "Test the power supply's outputs with a multimeter",
+   "value": "low",
+   "requires": "unplugged",
+   "requiresText": "Shut it down and unplug it before you open the case to reach the power supply.",
+   "result": "The 12 V, 5 V and 3.3 V outputs all read within normal range. You measured them with the computer idle, not under an afternoon's load.",
+   "note": "Normal readings make a failing power supply less likely, though a quick test with the computer idle can't rule it out. It doesn't point to another cause on its own.",
+   "pointsTo": null,
+   "weakens": [
+    "psu"
+   ]
+  },
+  {
+   "id": "look-updates",
+   "group": "look",
+   "label": "Check Windows Update",
+   "value": "low",
+   "forbiddenWhen": "unplugged",
+   "forbiddenText": "The computer is off. Plug it back in and start it first.",
+   "result": "Windows is up to date. The last update installed five weeks ago, before the shutdowns started.",
+   "note": "Nothing changed in Windows when the shutdowns began, so a Windows problem looks less likely. It doesn't point anywhere else.",
+   "pointsTo": null,
+   "weakens": [
+    "windows"
+   ]
+  },
+  {
+   "id": "look-drive",
+   "group": "look",
+   "label": "Check the drive's health",
+   "value": "low",
+   "forbiddenWhen": "unplugged",
+   "forbiddenText": "The computer is off. Plug it back in and start it first.",
+   "result": "The drive's health report (SMART) says Good, with no reallocated sectors or errors.",
+   "note": "A healthy drive rules out the drive. It doesn't point to any other cause.",
+   "pointsTo": null,
+   "rulesOut": [
+    "drive"
+   ]
+  },
+  {
+   "id": "act-psu",
+   "group": "act",
+   "label": "Replace the power supply",
+   "value": "premature",
+   "refusal": "Not yet. Nothing you've found shows the power supply is failing. Replacing a part on a guess costs money and time, and if heat is the cause, the computer will keep shutting off."
+  },
+  {
+   "id": "act-reinstall",
+   "group": "act",
+   "label": "Reinstall Windows",
+   "value": "premature",
+   "refusal": "Not yet. Reinstalling takes hours and wipes the computer's setup, and there's no sign of a software problem. Find the cause first."
+  }
+ ],
+ "minFindingsToDiagnose": 2,
+ "diagnosis": {
+  "correct": "heat",
+  "feedback": {
+   "psu": "A failing power supply doesn't explain why the shutdowns happen only in the afternoon, or why the processor climbs past 100 °C right before each one.",
+   "windows": "A Windows crash usually shows a blue error screen and leaves a stop code. These shutdowns have neither, and nothing in Windows changed.",
+   "drive": "A failing drive causes slowdowns, errors and crashes, not a clean loss of power. Nothing you've seen points to the drive."
+  },
+  "keyEvidence": [
+   "look-temp",
+   "look-inside",
+   "look-desk"
+  ],
+  "evidenceFeedback": "Pick at least one check that points to heat specifically: the temperature readings, the dust inside, or the heater beside the case. What Tony told you helps, but a check has to back it up."
+ },
+ "fixes": [
+  {
+   "id": "clean-move",
+   "label": "Blow the dust out of the intake, fans and cooler with compressed air, and move the tower out of the corner and away from the heater",
+   "correct": true
+  },
+  {
+   "id": "new-cooler",
+   "label": "Replace the processor cooler with a bigger one",
+   "feedback": "That's more than this needs. The cooler works; it's clogged. Clean it first, and replace it only if temperatures stay high."
+  },
+  {
+   "id": "paste",
+   "label": "Remove the cooler and reapply thermal paste",
+   "feedback": "Thermal paste is worth checking if cleaning doesn't bring temperatures down, but it doesn't explain why the problem started a couple of weeks ago. Start with the dust and the heater."
+  },
+  {
+   "id": "slow",
+   "label": "Lower the processor's speed in the firmware settings so it runs cooler",
+   "feedback": "That hides the symptom and leaves Tony with a slower computer. Fix what's making it hot."
+  }
+ ],
+ "verify": "After cleaning and moving the tower, HWMonitor shows the processor peaking at 68 °C during the same afternoon work, with the heater on across the room. The computer runs from noon to closing without shutting off, and the records system and label printer both work.",
+ "prevention": [
+  {
+   "id": "schedule",
+   "label": "Add the front desk computer to a cleaning schedule every few months",
+   "good": true,
+   "feedback": "Yes. Floor-level desktops collect dust fastest."
+  },
+  {
+   "id": "space",
+   "label": "Keep the tower out of the corner, with space around it and the heater pointed away",
+   "good": true,
+   "feedback": "Yes. This deals with the conditions that started it."
+  },
+  {
+   "id": "psu-anyway",
+   "label": "Replace the power supply anyway, to be safe",
+   "good": false,
+   "feedback": "No. The power supply tested fine, and the shutdowns stopped once the heat was dealt with."
+  },
+  {
+   "id": "no-updates",
+   "label": "Turn off Windows updates",
+   "good": false,
+   "feedback": "No. Updates had nothing to do with this, and turning them off leaves the computer unprotected."
+  }
+ ],
+ "debrief": {
+  "summary": "The processor was overheating and the computer shut itself off to protect it. Dust clogged the cooler and intake, and the space heater and the tight corner made the case hotter in the afternoon.",
+  "mostInformative": [
+   "The afternoon pattern (ask when it happens): it points away from a failing part and toward something in the room.",
+   "The processor temperature: the shutdown came right at the processor's limit. This is the check that decides it.",
+   "The dust inside and the heater beside the case: they explain why it overheats now and not before."
+  ],
+  "note": "Event ID 41 was worth checking, but it only says the power cut out. It never says why."
+ },
+ "reflection": [
+  "What was your first working hypothesis, and what made you keep it or change it?",
+  "Which check decided it, and what evidence justified your fix?"
+ ],
+ "ticketNote": null
+}
+</script>
+<script src="../bench/v1/bench.js"></script>
+</body>
+</html>
