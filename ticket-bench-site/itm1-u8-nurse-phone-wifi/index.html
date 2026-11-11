@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>On-call nurse&#x27;s phone · Ticket Bench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../bench/v1/bench.css">
+</head>
+<body>
+<div id="bench"></div>
+<script type="application/json" id="scenario">
+{
+ "id": "itm1-u8-nurse-phone-wifi",
+ "course": "Unit 8",
+ "ticket": "Ticket 1",
+ "device": "On-call nurse's phone",
+ "reportedBy": "Keisha Morgan, the on-call nurse",
+ "report": "My phone won't get on the clinic Wi-Fi this week. The records app works, but it's slow, and I got a text that I'm close to my data limit.",
+ "arrival": [
+  "Keisha's phone is the clinic's iPhone, the one she carries on call.",
+  "The clinic has one staff Wi-Fi network, MapleStaff, with an access point in the hallway ceiling."
+ ],
+ "hypotheses": [
+  {
+   "id": "password",
+   "label": "The phone has an old Wi-Fi password saved",
+   "name": "an old saved password"
+  },
+  {
+   "id": "off",
+   "label": "Wi-Fi is turned off on the phone",
+   "name": "Wi-Fi being turned off"
+  },
+  {
+   "id": "network",
+   "label": "The clinic's Wi-Fi network is down",
+   "name": "the clinic's network"
+  },
+  {
+   "id": "range",
+   "label": "The phone is too far from the access point",
+   "name": "the distance from the access point"
+  }
+ ],
+ "groups": [
+  {
+   "id": "ask",
+   "label": "Ask Keisha",
+   "needsHypothesis": false
+  },
+  {
+   "id": "look",
+   "label": "Look and check",
+   "needsHypothesis": true
+  },
+  {
+   "id": "act",
+   "label": "Make a change",
+   "needsHypothesis": true,
+   "needsRealHypothesis": true
+  }
+ ],
+ "actions": [
+  {
+   "id": "ask-when",
+   "group": "ask",
+   "label": "When did it stop working?",
+   "value": "useful",
+   "result": "\"Monday morning. It was fine on Friday, and I was off all weekend.\"",
+   "note": "Something changed over the weekend, either on the phone or on the network. That narrows the timing but doesn't point to one cause.",
+   "pointsTo": null
+  },
+  {
+   "id": "ask-change",
+   "group": "ask",
+   "label": "Has anything changed at the clinic?",
+   "value": "key",
+   "result": "\"Dana sent a message Saturday about the Wi-Fi, I think. I haven't read it.\" Dana confirms the staff Wi-Fi password changed Saturday and gives you the new one from the clinic's password list.",
+   "note": "The password changed while Keisha was off. That would explain it if her phone is still offering the old one.",
+   "pointsTo": "password"
+  },
+  {
+   "id": "look-status",
+   "group": "look",
+   "label": "Look at the top of the phone's screen",
+   "value": "useful",
+   "result": "The status bar shows 5G and four bars of cell signal. There's no Wi-Fi symbol.",
+   "note": "The phone is on the cellular network, not Wi-Fi, which is why the app still works and why her data is running out. It tells you which connection she's using, not why Wi-Fi failed.",
+   "pointsTo": null
+  },
+  {
+   "id": "look-settings",
+   "group": "look",
+   "label": "Open Settings, then Wi-Fi",
+   "value": "useful",
+   "result": "Wi-Fi is turned on. MapleStaff is in the list with full signal bars, but the phone isn't joined to it. Airplane Mode is off.",
+   "note": "Wi-Fi is on and the signal is strong, which rules out Wi-Fi being off and the distance. It doesn't say which of the other causes it is.",
+   "pointsTo": null,
+   "rulesOut": [
+    "off",
+    "range"
+   ]
+  },
+  {
+   "id": "look-other",
+   "group": "look",
+   "label": "Check another staff phone in the same spot",
+   "value": "useful",
+   "result": "Tony's phone, standing next to Keisha, shows the Wi-Fi symbol and loads a web page right away.",
+   "note": "The clinic's network is working where you're standing, so the problem is on Keisha's phone. That rules one cause out without pointing to another.",
+   "pointsTo": null,
+   "rulesOut": [
+    "network"
+   ]
+  },
+  {
+   "id": "look-tap",
+   "group": "look",
+   "label": "Tap MapleStaff in her Wi-Fi settings",
+   "value": "key",
+   "result": "A box appears: Incorrect password for \"MapleStaff.\" Keisha says she's never typed a password on this phone; it always just connected.",
+   "note": "The network is answering and turning down the password the phone sent. A phone that's out of range or has Wi-Fi off wouldn't get that far, and a network that's down wouldn't answer.",
+   "pointsTo": "password",
+   "rulesOut": [
+    "off",
+    "range",
+    "network"
+   ]
+  },
+  {
+   "id": "act-restart",
+   "group": "act",
+   "label": "Restart the phone",
+   "value": "low",
+   "result": "The phone restarts. It tries MapleStaff again, and the same Incorrect password box appears.",
+   "note": "A restart clears temporary glitches, and this isn't one. It doesn't point to one cause on its own.",
+   "pointsTo": null
+  },
+  {
+   "id": "act-reset",
+   "group": "act",
+   "label": "Reset the phone's network settings",
+   "value": "premature",
+   "refusal": "Not yet. Resetting network settings erases every saved Wi-Fi network, VPN and cellular setting on the phone. Find the cause first; it's rarely needed."
+  },
+  {
+   "id": "act-ap",
+   "group": "act",
+   "label": "Restart the clinic's access point",
+   "value": "premature",
+   "refusal": "Not yet. Restarting the access point knocks every device in the clinic off Wi-Fi for a few minutes, and nothing you've found shows the network is the problem."
+  }
+ ],
+ "minFindingsToDiagnose": 2,
+ "diagnosis": {
+  "correct": "password",
+  "feedback": {
+   "off": "Settings shows Wi-Fi turned on and Airplane Mode off.",
+   "network": "Tony's phone connects in the same spot, and the network answers Keisha's phone with an Incorrect password message.",
+   "range": "MapleStaff shows full signal bars, and Tony's phone connects from the same spot."
+  },
+  "keyEvidence": [
+   "look-tap"
+  ],
+  "evidenceFeedback": "Pick the check that shows the password specifically: tapping MapleStaff and seeing Incorrect password. The password change Dana confirmed helps, but a check has to back it up."
+ },
+ "fixes": [
+  {
+   "id": "rejoin",
+   "label": "Tap MapleStaff, enter the new password Dana gave you, and join",
+   "correct": true
+  },
+  {
+   "id": "reset",
+   "label": "Reset the phone's network settings, then join MapleStaff",
+   "feedback": "That would work in the end, but it erases every other saved network and setting first. Entering the new password is all this needs."
+  },
+  {
+   "id": "cellular",
+   "label": "Leave the phone on cellular and ask for a bigger data plan",
+   "feedback": "That works around the problem and costs the clinic money. The Wi-Fi is fine; the phone just needs the new password."
+  },
+  {
+   "id": "ap",
+   "label": "Restart the access point",
+   "feedback": "The access point is working; Tony's phone is on it. A restart won't change the password Keisha's phone has saved."
+  }
+ ],
+ "verify": "The phone joins MapleStaff, and the Wi-Fi symbol appears at the top of the screen where 5G was (the cell bars stay). With cellular data turned off for a moment, the records app still loads, so it's using Wi-Fi.",
+ "prevention": [
+  {
+   "id": "routine",
+   "label": "Add a step to the clinic's password-change routine: check that each clinic phone and tablet rejoins the new network",
+   "good": true,
+   "feedback": "Yes. Devices of staff who are out that day are the ones that get missed."
+  },
+  {
+   "id": "icon",
+   "label": "Show Keisha how to tell from the status bar whether she's on Wi-Fi or cellular",
+   "good": true,
+   "feedback": "Yes. She'd have spotted this on Monday instead of when her data ran low."
+  },
+  {
+   "id": "nopassword",
+   "label": "Remove the password from MapleStaff so this can't happen",
+   "good": false,
+   "feedback": "No. An open staff network lets anyone nearby join it, and it carries patient information."
+  },
+  {
+   "id": "nochange",
+   "label": "Stop changing the Wi-Fi password",
+   "good": false,
+   "feedback": "No. Changing a shared password from time to time, and when someone leaves, limits who can get on the network."
+  }
+ ],
+ "debrief": {
+  "summary": "The clinic changed the staff Wi-Fi password while Keisha was off, and her phone kept offering the old one. The network turned it down, so the phone stayed on cellular data.",
+  "mostInformative": [
+   "Tapping MapleStaff: the Incorrect password message shows the network is reachable and turning down the phone's password.",
+   "What changed at the clinic: the password change while Keisha was off.",
+   "The top of the screen: 5G instead of the Wi-Fi symbol shows which connection the phone was using."
+  ],
+  "note": "Checking Tony's phone was a quick way to rule out the network without touching the access point."
+ },
+ "reflection": [
+  "What was your first working hypothesis, and what made you keep it or change it?",
+  "Which check decided it, and what evidence justified your fix?",
+  "Which kind of connection was the phone trying to use, and why did it fail?"
+ ],
+ "ticketNote": null
+}
+</script>
+<script src="../bench/v1/bench.js"></script>
+</body>
+</html>

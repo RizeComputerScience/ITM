@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Exam room laptop · Ticket Bench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../bench/v1/bench.css">
+</head>
+<body>
+<div id="bench"></div>
+<script type="application/json" id="scenario">
+{
+ "id": "itm1-u7-exam-room-laptop",
+ "course": "Unit 7",
+ "ticket": "Ticket 1",
+ "device": "Exam room laptop",
+ "reportedBy": "Dr. Lena Brooks, in Exam Room 2",
+ "report": "My screen went black in the middle of the morning. The light on the side is still on, and I can hear the laptop running, but I can't see anything.",
+ "arrival": [
+  "The laptop is open on the exam room desk, plugged into its charger.",
+  "The power light is on and the fan is running. The screen looks black."
+ ],
+ "hypotheses": [
+  {
+   "id": "bright",
+   "label": "The screen's brightness is turned all the way down",
+   "name": "the brightness setting"
+  },
+  {
+   "id": "backlight",
+   "label": "The screen's backlight has failed",
+   "name": "a failed backlight"
+  },
+  {
+   "id": "frozen",
+   "label": "Windows has frozen",
+   "name": "a frozen computer"
+  },
+  {
+   "id": "project",
+   "label": "The picture is being sent to another display",
+   "name": "the display output setting"
+  }
+ ],
+ "groups": [
+  {
+   "id": "ask",
+   "label": "Ask Dr. Brooks",
+   "needsHypothesis": false
+  },
+  {
+   "id": "look",
+   "label": "Look and check",
+   "needsHypothesis": true
+  },
+  {
+   "id": "act",
+   "label": "Make a change",
+   "needsHypothesis": true,
+   "needsRealHypothesis": true
+  }
+ ],
+ "actions": [
+  {
+   "id": "ask-before",
+   "group": "ask",
+   "label": "What were you doing just before it went dark?",
+   "value": "key",
+   "result": "\"Wiping down the keyboard with a disinfectant cloth between patients. I looked up and the screen was black.\"",
+   "note": "Wiping the keyboard presses keys, and the brightness keys sit along the top row. A failing backlight or a frozen computer wouldn't line up so neatly with the wipe.",
+   "pointsTo": "bright"
+  },
+  {
+   "id": "ask-dropped",
+   "group": "ask",
+   "label": "Has the laptop been dropped or bumped?",
+   "value": "useful",
+   "result": "\"No. It lives on this desk.\"",
+   "note": "No knock makes a damaged screen or backlight less likely, but it doesn't point to one cause.",
+   "pointsTo": null
+  },
+  {
+   "id": "look-caps",
+   "group": "look",
+   "label": "Press Caps Lock and watch its light",
+   "value": "useful",
+   "result": "The Caps Lock light turns on and off each time you press the key.",
+   "note": "The laptop is responding to the keyboard, so Windows hasn't frozen. That narrows the list, but the other causes all fit a laptop that responds.",
+   "pointsTo": null,
+   "rulesOut": [
+    "frozen"
+   ]
+  },
+  {
+   "id": "look-light",
+   "group": "look",
+   "label": "Look closely at the screen with a flashlight",
+   "value": "useful",
+   "result": "With your phone's flashlight held close, you can just make out the sign-in screen.",
+   "note": "There's a picture on the screen; it just isn't lit. That fits a failed backlight and a brightness turned all the way down equally well, so it doesn't point to one.",
+   "pointsTo": null
+  },
+  {
+   "id": "look-monitor",
+   "group": "look",
+   "label": "Plug in an external monitor",
+   "value": "useful",
+   "sets": "monitor",
+   "result": "The sign-in screen appears on the external monitor, clear and bright. The laptop's own screen stays dark.",
+   "note": "The laptop is running and sending a picture, so the problem is the laptop's own screen. The picture wasn't being sent anywhere else before; nothing was plugged in until now. The external monitor also lets you see Settings to check it.",
+   "pointsTo": null,
+   "mayRuleOut": [
+    "frozen"
+   ]
+  },
+  {
+   "id": "look-display",
+   "group": "look",
+   "label": "Open Display settings",
+   "value": "key",
+   "requires": "monitor",
+   "requiresText": "You can't see the laptop's screen well enough to use Settings. Plug in an external monitor first.",
+   "result": "Settings, System, Display shows two displays. The laptop's built-in screen is turned on, and its brightness slider is at 0%.",
+   "note": "The built-in screen is on and set to 0%. That's the cause, and it rules out the picture being sent elsewhere.",
+   "pointsTo": "bright",
+   "rulesOut": [
+    "project"
+   ]
+  },
+  {
+   "id": "look-project",
+   "group": "look",
+   "label": "Press Windows+P to see the display mode",
+   "value": "low",
+   "result": "The projection menu shows \"PC screen only\" selected.",
+   "note": "The picture is meant for the laptop's own screen, so it isn't being sent elsewhere. That rules one cause out without pointing to another.",
+   "pointsTo": null,
+   "rulesOut": [
+    "project"
+   ]
+  },
+  {
+   "id": "look-driver",
+   "group": "look",
+   "label": "Check the display driver in Device Manager",
+   "value": "low",
+   "requires": "monitor",
+   "requiresText": "You can't see the laptop's screen well enough to use Device Manager. Plug in an external monitor first.",
+   "result": "The display adapter shows no warning sign, and the driver hasn't changed in two months.",
+   "note": "A healthy driver doesn't point to any one cause. The picture reaching the external monitor already showed the graphics are working.",
+   "pointsTo": null
+  },
+  {
+   "id": "act-restart",
+   "group": "act",
+   "label": "Restart the laptop",
+   "value": "low",
+   "result": "The laptop restarts. You hear the startup sound, and the laptop's screen is still black, with the faint sign-in screen visible up close.",
+   "note": "A restart clears a frozen computer, and this one wasn't frozen. The screen staying dark doesn't point to one of the remaining causes.",
+   "pointsTo": null,
+   "rulesOut": [
+    "frozen"
+   ]
+  },
+  {
+   "id": "act-screen",
+   "group": "act",
+   "label": "Order a replacement screen",
+   "value": "premature",
+   "refusal": "Not yet. A new screen costs money and takes days to arrive, and nothing you've found shows the screen or backlight has failed. Check the settings first."
+  }
+ ],
+ "minFindingsToDiagnose": 2,
+ "diagnosis": {
+  "correct": "bright",
+  "feedback": {
+   "backlight": "A failed backlight would also leave a faint picture, but it wouldn't show up in Settings as brightness at 0%, and it wouldn't happen right as the keyboard was wiped.",
+   "frozen": "The Caps Lock light responds and the laptop sends a clear picture to an external monitor, so Windows is running.",
+   "project": "Display settings show the laptop's own screen is turned on, and Windows+P shows \"PC screen only.\" The picture is going to the right place."
+  },
+  "keyEvidence": [
+   "look-display"
+  ],
+  "evidenceFeedback": "Pick the check that shows the brightness specifically: the 0% setting in Display settings. What Dr. Brooks told you helps, but a check has to back it up."
+ },
+ "fixes": [
+  {
+   "id": "raise",
+   "label": "Turn the brightness up with the brightness keys or the slider in Display settings, then unplug the external monitor",
+   "correct": true
+  },
+  {
+   "id": "driver",
+   "label": "Reinstall the display driver",
+   "feedback": "The driver is fine; the picture reaches the external monitor. Reinstalling it won't change the brightness setting."
+  },
+  {
+   "id": "replace",
+   "label": "Replace the screen",
+   "feedback": "The screen works; it's set to 0%. Turn the brightness up first."
+  },
+  {
+   "id": "external",
+   "label": "Leave the external monitor plugged in for Dr. Brooks to use",
+   "feedback": "That works around the problem instead of fixing it, and it leaves Dr. Brooks with an extra monitor on a small exam room desk."
+  }
+ ],
+ "verify": "With the brightness at 70% and the external monitor unplugged, the laptop's own screen shows a clear picture. Dr. Brooks signs in and opens the records system without a problem.",
+ "prevention": [
+  {
+   "id": "lock",
+   "label": "Show Dr. Brooks how to lock the laptop (Windows+L) or close the lid before wiping the keyboard",
+   "good": true,
+   "feedback": "Yes. A locked or closed laptop ignores stray key presses, and it protects patient records while the screen is unattended."
+  },
+  {
+   "id": "keys",
+   "label": "Show her which keys turn the brightness up and down",
+   "good": true,
+   "feedback": "Yes. If it happens again, she can fix it herself in seconds."
+  },
+  {
+   "id": "disable",
+   "label": "Turn off the brightness keys in the firmware settings",
+   "good": false,
+   "feedback": "No. That takes away a control she needs and doesn't stop other stray key presses."
+  },
+  {
+   "id": "no-wipe",
+   "label": "Ask her to stop wiping the keyboard",
+   "good": false,
+   "feedback": "No. Cleaning between patients is part of infection control. Locking the laptop first solves the problem."
+  }
+ ],
+ "debrief": {
+  "summary": "The laptop's screen brightness was turned down to 0%, most likely by the brightness keys while Dr. Brooks wiped the keyboard. The laptop and screen were fine.",
+  "mostInformative": [
+   "What she was doing just before: the keyboard wipe lines up with the brightness keys on the top row.",
+   "The external monitor: it showed the laptop was running and gave you a screen to check Settings on.",
+   "Display settings: the built-in screen at 0% is the check that decides it."
+  ],
+  "note": "The flashlight check was worth doing, since it shows the picture is there, but a failed backlight and a 0% brightness look the same under a flashlight."
+ },
+ "reflection": [
+  "What was your first working hypothesis, and what made you keep it or change it?",
+  "Which check decided it, and what evidence justified your fix?"
+ ],
+ "ticketNote": null
+}
+</script>
+<script src="../bench/v1/bench.js"></script>
+</body>
+</html>
