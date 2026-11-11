@@ -71,11 +71,7 @@
    "value": "key",
    "result": "\"Wiping down the keyboard with a disinfectant cloth between patients. I looked up and the screen was black.\"",
    "note": "Wiping the keyboard presses keys, and the brightness keys sit along the top row. A failing backlight or a frozen computer wouldn't line up so neatly with the wipe.",
-   "pointsTo": "bright",
-   "weakens": [
-    "backlight",
-    "frozen"
-   ]
+   "pointsTo": "bright"
   },
   {
    "id": "ask-dropped",
@@ -84,10 +80,7 @@
    "value": "useful",
    "result": "\"No. It lives on this desk.\"",
    "note": "No knock makes a damaged screen or backlight less likely, but it doesn't point to one cause.",
-   "pointsTo": null,
-   "weakens": [
-    "backlight"
-   ]
+   "pointsTo": null
   },
   {
    "id": "look-caps",
@@ -117,8 +110,11 @@
    "value": "useful",
    "sets": "monitor",
    "result": "The sign-in screen appears on the external monitor, clear and bright. The laptop's own screen stays dark.",
-   "note": "The laptop is running and sending a picture, so the problem is the laptop's own screen. The external monitor also lets you see Settings to check it.",
-   "pointsTo": null
+   "note": "The laptop is running and sending a picture, so the problem is the laptop's own screen. The picture wasn't being sent anywhere else before; nothing was plugged in until now. The external monitor also lets you see Settings to check it.",
+   "pointsTo": null,
+   "mayRuleOut": [
+    "frozen"
+   ]
   },
   {
    "id": "look-display",
@@ -132,9 +128,6 @@
    "pointsTo": "bright",
    "rulesOut": [
     "project"
-   ],
-   "weakens": [
-    "backlight"
    ]
   },
   {

@@ -1,8 +1,8 @@
-(function(){var m=document.getElementById("bench");if(m&&!m.firstChild){m.outerHTML="<main class=\"wrap\">\n  <header class=\"top\">\n    <h1>Ticket Bench</h1>\n    <span class=\"tag\" id=\"course\">Prototype</span>\n  </header>\n  <div class=\"grid\">\n    <div class=\"a-side\">\n      <section class=\"a-ticket\" aria-labelledby=\"t-h\">\n        <h2 id=\"t-h\"></h2>\n        <p class=\"who\" id=\"twho\"></p>\n        <p class=\"report\" id=\"treport\"></p>\n        <div id=\"tmore\">\n          <p class=\"arrive-h\">When you arrive</p>\n          <ul class=\"arrive\" id=\"tarrive\"></ul>\n        </div>\n        <button class=\"link\" id=\"ttoggle\" type=\"button\" aria-controls=\"tmore\"></button>\n      </section>\n      <section class=\"a-log\" aria-labelledby=\"l-h\" tabindex=\"0\">\n        <h2 id=\"l-h\">Investigation record</h2>\n        <ol class=\"log\" id=\"log\"></ol>\n        <p class=\"empty\" id=\"log-empty\">Nothing yet. Each question you ask and check you run shows up here with its result.</p>\n      </section>\n    </div>\n    <div class=\"a-work\">\n      <section id=\"work\" aria-label=\"Next step\">\n        <div class=\"hypstrip\" id=\"hyp\" role=\"region\" aria-label=\"Hypothesis\"></div>\n        <div class=\"wbody\" id=\"wbody\"></div>\n      </section>\n    </div>\n  </div>\n  <p id=\"sr-status\" class=\"sr\" role=\"status\" aria-live=\"polite\"></p>\n  <footer class=\"note\">Your progress is kept only in this browser so a reload doesn't lose it. Nothing is sent anywhere. <button class=\"link\" id=\"restart\">Start this ticket over</button></footer>\n</main>";}})();
+(function(){var m=document.getElementById("bench");if(m&&!m.firstChild){m.outerHTML="<main class=\"wrap\">\n  <header class=\"top\">\n    <h1>Ticket Bench</h1>\n    <div class=\"top-right\">\n      <span class=\"tag\" id=\"course\">Prototype</span>\n      <div class=\"restart\" id=\"restart-box\"></div>\n    </div>\n  </header>\n  <div class=\"grid\">\n    <div class=\"a-side\">\n      <section class=\"a-ticket\" aria-labelledby=\"t-h\">\n        <h2 id=\"t-h\"></h2>\n        <p class=\"who\" id=\"twho\"></p>\n        <p class=\"report\" id=\"treport\"></p>\n        <div id=\"tmore\">\n          <p class=\"arrive-h\">When you arrive</p>\n          <ul class=\"arrive\" id=\"tarrive\"></ul>\n        </div>\n        <button class=\"link\" id=\"ttoggle\" type=\"button\" aria-controls=\"tmore\"></button>\n      </section>\n      <section class=\"a-log\" aria-labelledby=\"l-h\" tabindex=\"0\">\n        <div class=\"log-head\"><h2 id=\"l-h\">Investigation record</h2><div class=\"log-copy\" id=\"log-copy\"></div></div>\n        <ol class=\"log\" id=\"log\"></ol>\n        <p class=\"empty\" id=\"log-empty\">Nothing yet. Each question you ask and check you run shows up here with its result.</p>\n      </section>\n    </div>\n    <div class=\"a-work\">\n      <section id=\"work\" aria-label=\"Next step\">\n        <div class=\"hypstrip\" id=\"hyp\" role=\"region\" aria-label=\"Hypothesis\"></div>\n        <div class=\"wbody\" id=\"wbody\"></div>\n      </section>\n    </div>\n  </div>\n  <p id=\"sr-status\" class=\"sr\" role=\"status\" aria-live=\"polite\"></p>\n  <footer class=\"note\">Your progress is kept only in this browser so a reload doesn't lose it. Nothing is sent anywhere.</footer>\n</main>";}})();
 (function () {
   if (!document.documentElement.lang) document.documentElement.lang = 'en';
   const S = JSON.parse(document.getElementById('scenario').textContent);
-  const KEY = 'ticketbench:v3:' + S.id;
+  const KEY = 'ticketbench:v4:' + S.id;
   const fresh = () => ({ hyp: null, editHyp: false, ticketOpen: null, done: [], log: [], flags: {}, pending: null, lastNote: null,
     stage: 'investigate', diagTries: [], evidence: [], fixTries: [], fix: null, prevention: [], refusals: [] });
   let st;
@@ -25,27 +25,30 @@
   const CHEV = '<svg viewBox="0 0 12 20" aria-hidden="true" focusable="false"><path d="M2.5 2.5 9.5 10l-7 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const Q = (t, id) => '<h2 class="q"' + (id ? ' id="' + id + '"' : '') + '>' + CHEV + '<span>' + t + '</span></h2>';
 
-  // How a result bears on a cause: supports, weakens, rules (out) or none
-  const rel = (a, h) => a.pointsTo === h ? 'supports' : (a.rulesOut || []).includes(h) ? 'rules' : (a.weakens || []).includes(h) ? 'weakens' : 'none';
-  const REL = { supports: 'Supports it', weakens: 'Weakens it', rules: 'Rules it out', none: "Doesn't affect it either way" };
-  const REL_THIS = { supports: 'supports your hypothesis', weakens: 'weakens your hypothesis', rules: 'rules out your hypothesis', none: "doesn't affect your hypothesis either way" };
-  const REL_AS = { supports: 'supporting your hypothesis', weakens: 'weakening your hypothesis', rules: 'ruling out your hypothesis', none: 'not affecting your hypothesis' };
   // Causes the evidence has ruled out so far (only results the student has already read)
   const ruledOut = (except) => {
     const s = new Set();
     st.log.forEach(e => { if (e.type === 'action' && e.read && e !== except) (act(e.id).rulesOut || []).forEach(h => s.add(h)); });
     return s;
   };
-  // What a correct read looks like for this entry
+  // What a correct read looks like: the cause the result points toward, the causes it clearly rules out, and any it arguably rules out (mayRuleOut: checked or not, either is fine).
+  // Missing a rule-out of another cause still counts as a good read; the feedback names it. The wrong cause, missing that your own hypothesis is ruled out, or ruling out something the result doesn't rule out needs another look.
   function expectedRead(e) {
     const a = act(e.id);
     const prior = ruledOut(e);
-    const first = real(e.rh) ? rel(a, e.rh) : (a.pointsTo || NONE);
-    const others = (a.rulesOut || []).filter(h => h !== e.rh && !prior.has(h));
-    return { first, others };
+    const open = (xs) => (xs || []).filter(h => !prior.has(h));
+    return { first: a.pointsTo || NONE, others: open(a.rulesOut), maybe: open(a.mayRuleOut) };
   }
-  const sameSet = (x, y) => x.length === y.length && x.every(v => y.includes(v));
-  const readRight = (e) => { const x = expectedRead(e); return e.read.first === x.first && sameSet(e.read.others, x.others); };
+  function readCheck(e) {
+    const x = expectedRead(e);
+    const missed = x.others.filter(h => !e.read.others.includes(h));
+    return { firstOk: e.read.first === x.first,
+      missOwn: real(e.rh) && missed.includes(e.rh),
+      missing: missed.filter(h => h !== e.rh),
+      extra: e.read.others.filter(h => !x.others.includes(h) && !x.maybe.includes(h)) };
+  }
+  const readRight = (e) => { const c = readCheck(e); return c.firstOk && !c.missOwn && !c.extra.length; };
+  const alsoRules = (e) => { const m = readCheck(e).missing; return m.length ? ' It also rules out ' + list(m.map(hypName)) + '.' : ''; };
 
   // Evidence is told apart by typeface: what a person said is quoted text with the speaker's name; what a check showed is monospace
   const ASK = S.groups.find(g => g.id === 'ask');
@@ -76,12 +79,13 @@
     const diagnosed = st.stage !== 'investigate' && st.stage !== 'diagnose';
     const gone = real(st.hyp) && ruledOut().has(st.hyp);
     el.innerHTML = '<span class="lab">' + (diagnosed ? 'Cause' : 'Hypothesis') + '</span>' +
-      (canChange ? '<button class="link" id="hyp-change" type="button">Change</button>' : '<span></span>') +
+      (canChange ? '<button class="pill" id="hyp-change" type="button">Change hypothesis</button>' : '<span></span>') +
       '<span class="txt">' + (gone ? '<span class="gone">' + esc(hypLabel(st.hyp)) + '</span> <span class="note">(ruled out)</span>' : esc(hypLabel(st.hyp))) + '</span>';
-    const c = $('hyp-change'); if (c) c.addEventListener('click', () => {
-      st.editHyp = true; save(); render();
-      const r = $('wbody').querySelector('input:checked') || $('wbody').querySelector('input'); if (r) r.focus();
-    });
+    const c = $('hyp-change'); if (c) c.addEventListener('click', openHypChooser);
+  }
+  function openHypChooser() {
+    st.editHyp = true; save(); render();
+    const r = $('wbody').querySelector('input:checked') || $('wbody').querySelector('input'); if (r) r.focus();
   }
   const optLabel = (h, gone) => gone.has(h.id) ? '<span class="gone">' + esc(h.label) + '</span> <span class="muted">(ruled out)</span>' : esc(h.label);
 
@@ -110,22 +114,21 @@
   }
 
   function feedbackText(e) {
-    const a = act(e.id), x = expectedRead(e);
-    if (readRight(e)) return '✓ Good read. ' + a.note;
+    const a = act(e.id), x = expectedRead(e), c = readCheck(e);
+    if (readRight(e)) return '✓ Good read.' + alsoRules(e) + ' ' + a.note;
     const parts = [];
-    if (e.read.first !== x.first) parts.push(real(e.rh) ? 'This ' + REL_THIS[x.first] + '.' : (x.first === NONE ? "This doesn't point to any one cause." : 'This points toward ' + hypName(x.first) + '.'));
-    const missing = x.others.filter(h => !e.read.others.includes(h)), extra = e.read.others.filter(h => !x.others.includes(h));
-    if (missing.length) parts.push('It also rules out ' + list(missing.map(hypName)) + '.');
-    if (extra.length) parts.push("It doesn't rule out " + list(extra.map(hypName)) + '.');
-    return 'Look again. ' + parts.join(' ') + ' ' + a.note;
+    if (!c.firstOk) parts.push(x.first === NONE ? "This doesn't single out one cause." : 'This points toward ' + hypName(x.first) + '.');
+    if (c.missOwn) parts.push('It rules out your hypothesis.');
+    if (c.extra.length) parts.push("It doesn't rule out " + list(c.extra.map(hypName)) + '.');
+    return 'Look again. ' + parts.join(' ') + alsoRules(e) + ' ' + a.note;
   }
   function readLine(e) {
-    const x = expectedRead(e), ok = readRight(e);
-    let s = real(e.rh) ? 'You read it as ' + REL_AS[e.read.first] : (e.read.first === NONE ? 'You read it as not pointing to any one cause' : 'You read it as pointing toward ' + hypName(e.read.first));
+    const x = expectedRead(e);
+    let s = 'You read it as ' + (e.read.first === NONE ? 'not singling out one cause' : 'pointing toward ' + hypName(e.read.first));
     if (e.read.others.length) s += ' and ruled out ' + list(e.read.others.map(hypName));
     s += '.';
-    if (ok) return '✓ ' + s;
-    let b = real(e.rh) ? REL_AS[x.first] : (x.first === NONE ? 'not pointing to any one cause' : 'pointing toward ' + hypName(x.first));
+    if (readRight(e)) return '✓ ' + s + alsoRules(e);
+    let b = x.first === NONE ? 'not singling out one cause' : 'pointing toward ' + hypName(x.first);
     if (x.others.length) b += ', ruling out ' + list(x.others.map(hypName));
     return s + ' Better read: ' + b + '.';
   }
@@ -143,7 +146,19 @@
       else { h += resultHTML(a); if (e.read) h += '<p class="rd">' + esc(readLine(e)) + '</p>'; }
       items.push(h + '</li>');
     });
+    if (st.stage === 'debrief') {
+      const fix = (S.fixes.find(f => f.id === st.fix) || {}).label || '';
+      const prev = st.prevention.map(id => S.prevention.find(p => p.id === id).label).join('; ') || 'None chosen';
+      items.push('<li class="close"><div class="q">Diagnosis: ' + esc(hypLabel(S.diagnosis.correct)) + '</div><p class="rd">Supporting findings: ' + esc(st.evidence.map(id => act(id).label).join('; ')) + '</p></li>');
+      items.push('<li><div class="q">Fix: ' + esc(fix) + '</div><p class="out">' + esc(S.verify) + '</p></li>');
+      items.push('<li><div class="q">Prevention</div><p class="rd">' + esc(prev) + '</p></li>');
+    }
     $('log').innerHTML = items.join('');
+    const lc = $('log-copy');
+    if (st.stage === 'debrief') {
+      lc.innerHTML = '<button class="pill" type="button" id="copy-log">Copy the record</button><span class="hint" id="copied-log" role="status"></span>';
+      $('copy-log').addEventListener('click', () => copyRecord($('copied-log')));
+    } else lc.innerHTML = '';
     $('log-empty').hidden = st.log.length > 0;
     const lp = document.querySelector('.a-log'); if (lp && lp.scrollHeight > lp.clientHeight) lp.scrollTop = lp.scrollHeight;
   }
@@ -160,46 +175,44 @@
     save(); render();
   }
 
+  // What the result means for the working hypothesis. The engine says this; students only say what the result points toward and rules out.
   function nextText(a) {
-    const h = st.hyp;
-    if (!real(h)) return real(a.pointsTo) ? 'This points toward ' + hypName(a.pointsTo) + '. When you\'re ready, set a working hypothesis and choose a check that could test it.' : 'Choose what to ask or check next.';
-    const r = rel(a, h);
-    if (r === 'rules') return 'This rules out your hypothesis' + (real(a.pointsTo) ? ' and points toward ' + hypName(a.pointsTo) : '') + '. Change it before you check anything else.';
-    if (r === 'weakens') return 'This weakens your hypothesis' + (real(a.pointsTo) ? ' and points toward ' + hypName(a.pointsTo) : '') + '. If another cause now fits better, change your hypothesis.';
-    if (r === 'supports') return 'This supports your hypothesis. Look for a check that could prove it wrong, or choose "I know the cause" when the evidence is enough.';
-    if (real(a.pointsTo)) return 'This doesn\'t test your hypothesis, but it points toward ' + hypName(a.pointsTo) + '. If that now looks more likely, change your hypothesis.';
+    const h = st.hyp, p = a.pointsTo;
+    if (!real(h)) return real(p) ? 'This points toward ' + hypName(p) + '. When you\'re ready, set a working hypothesis and choose a check that could test it.' : 'Choose what to ask or check next.';
+    if ((a.rulesOut || []).includes(h)) return 'This rules out your hypothesis' + (real(p) ? ' and points toward ' + hypName(p) : '') + '. Change it before you check anything else.';
+    if (p === h) return 'This points toward your hypothesis. Look for a check that could prove it wrong, or choose "I know the cause" when the evidence is enough.';
+    if (real(p)) return 'This points toward ' + hypName(p) + ', not your hypothesis. If that cause now fits better, change your hypothesis.';
     return 'Choose what to ask or check next.';
   }
+  const suggestsChange = (a) => real(a.pointsTo) ? a.pointsTo !== st.hyp : real(st.hyp) && (a.rulesOut || []).includes(st.hyp);
 
   function workRead() {
     const w = $('wbody');
     const a = act(st.pending);
     const h = st.hyp;
     const prior = ruledOut();
-    let q1;
-    if (real(h)) {
-      q1 = '<fieldset><legend>How does this affect your hypothesis?</legend><div class="opts">' +
-        ['supports', 'weakens', 'rules', 'none'].map(k => '<label class="opt"><input type="radio" name="r" value="' + k + '"> <span class="t">' + REL[k] + '</span></label>').join('') + '</div></fieldset>';
-    } else {
-      q1 = '<fieldset><legend>Does this point toward one of the causes?</legend><div class="opts">' +
-        S.hypotheses.map(x => x.id).concat(NONE).map(k => '<label class="opt"><input type="radio" name="r" value="' + k + '"> <span class="t">' + esc(k === NONE ? "It doesn't point to any one cause" : hypLabel(k)) + '</span></label>').join('') + '</div></fieldset>';
-    }
-    const others = S.hypotheses.filter(x => x.id !== h);
-    const q2 = '<fieldset><legend>Does it rule out ' + (real(h) ? 'any other cause' : 'any cause') + '?</legend><div class="opts">' +
-      others.map(x => prior.has(x.id)
-        ? '<div class="opt off"><span class="t"><span class="gone">' + esc(x.label) + '</span> (already ruled out)</span></div>'
-        : '<label class="opt"><input type="checkbox" name="o" value="' + x.id + '"> <span class="t">' + esc(x.label) + '</span></label>').join('') +
+    const mine = (id) => real(h) && id === h ? ' <span class="muted">(your hypothesis)</span>' : '';
+    const row = (x, type, name) => prior.has(x.id)
+      ? '<div class="opt off"><span class="t"><span class="gone">' + esc(x.label) + '</span> (already ruled out)</span></div>'
+      : '<label class="opt"><input type="' + type + '" name="' + name + '" value="' + x.id + '"> <span class="t">' + esc(x.label) + mine(x.id) + '</span></label>';
+    const q1 = '<fieldset><legend>Which cause does this point toward?</legend><div class="opts">' +
+      S.hypotheses.map(x => row(x, 'radio', 'r')).join('') +
+      '<label class="opt"><input type="radio" name="r" value="' + NONE + '"> <span class="t">It doesn\'t single out one cause</span></label></div></fieldset>';
+    const q2 = '<fieldset><legend>Does it rule out any cause?</legend><div class="opts">' +
+      S.hypotheses.map(x => row(x, 'checkbox', 'o')).join('') +
       '</div><p class="hint" style="margin-top:6px">Leave these blank if it doesn\'t rule anything out.</p></fieldset>';
     w.innerHTML = Q(esc(a.label)) + '<div style="margin:-6px 0 20px 24px">' + resultHTML(a) + '</div>' +
       '<form id="read">' + q1 + q2 + '<p class="err" id="read-err" hidden></p><div class="row"><button class="primary" type="submit">Log my read</button></div></form>';
     $('read').addEventListener('submit', e => {
       e.preventDefault();
       const fd = new FormData(e.target);
-      const v = fd.get('r');
-      if (!v) { const m = $('read-err'); m.hidden = false; m.textContent = real(h) ? 'Choose how this affects your hypothesis.' : 'Choose whether this points toward a cause.'; m.setAttribute('tabindex', '-1'); m.focus(); return; }
+      const v = fd.get('r'), o = fd.getAll('o');
+      const err = (msg) => { const m = $('read-err'); m.hidden = false; m.textContent = msg; m.setAttribute('tabindex', '-1'); m.focus(); };
+      if (!v) { err('Choose which cause this points toward, or that it doesn\'t single out one.'); return; }
+      if (o.includes(v)) { err("A result can't point toward a cause and rule it out. Change one of your answers."); return; }
       const entry = st.log.slice().reverse().find(x => x.type === 'action' && x.id === st.pending);
       entry.rh = h;
-      entry.read = { first: v, others: fd.getAll('o') };
+      entry.read = { first: v, others: o };
       st.lastNote = { id: a.id };
       st.pending = null; save(); render();
     });
@@ -217,7 +230,8 @@
     if (st.lastNote && st.lastNote.id) {
       const entry = st.log.slice().reverse().find(x => x.type === 'action' && x.id === st.lastNote.id);
       const a = act(st.lastNote.id);
-      h += '<div class="top-fb"><p>' + esc(feedbackText(entry)) + '</p><p><strong>Next:</strong> ' + esc(nextText(a)) + '</p></div>';
+      h += '<div class="top-fb"><p>' + esc(feedbackText(entry)) + '</p><p><strong>Next:</strong> ' + esc(nextText(a)) + '</p>' +
+        (suggestsChange(a) ? '<div class="row" style="margin-top:10px"><button class="pill" type="button" id="fb-change">Change hypothesis</button></div>' : '') + '</div>';
     }
     h += Q('What do you do next?');
     S.groups.forEach(g => {
@@ -240,6 +254,7 @@
       if (b.dataset.needs) { w.querySelectorAll('.needs-msg').forEach(n => n.remove()); b.insertAdjacentHTML('afterend', '<p class="needs-msg" role="status">Not done yet. ' + esc(a.requires && !st.flags[a.requires] ? a.requiresText : a.forbiddenText) + '</p>'); return; }
       doAction(b.dataset.id);
     }));
+    const fc = $('fb-change'); if (fc) fc.addEventListener('click', openHypChooser);
     const go = $('go-diag'); if (go) go.addEventListener('click', () => { st.lastNote = null; st.editHyp = false; st.stage = 'diagnose'; save(); render(); });
   }
 
@@ -293,11 +308,11 @@
   }
 
   function readPlain(e) {
-    const x = expectedRead(e), ok = readRight(e);
-    let s = real(e.rh) ? lower(REL[e.read.first]) + ' (my hypothesis: ' + lowerLabel(hypLabel(e.rh)) + ')' : (e.read.first === NONE ? "it doesn't point to any one cause" : 'it points toward ' + hypName(e.read.first));
+    const x = expectedRead(e), m = readCheck(e).missing;
+    let s = e.read.first === NONE ? "it doesn't single out one cause" : 'it points toward ' + hypName(e.read.first);
     if (e.read.others.length) s += '; it rules out ' + list(e.read.others.map(hypName));
-    if (ok) return s;
-    let b = real(e.rh) ? lower(REL[x.first]) : (x.first === NONE ? "it doesn't point to any one cause" : 'it points toward ' + hypName(x.first));
+    if (readRight(e)) return s + (m.length ? ' (it also rules out ' + list(m.map(hypName)) + ')' : '');
+    let b = x.first === NONE ? "it doesn't single out one cause" : 'it points toward ' + hypName(x.first);
     if (x.others.length) b += '; it rules out ' + list(x.others.map(hypName));
     return s + ' (better read: ' + b + ')';
   }
@@ -337,19 +352,27 @@
       if (chose === p.good) return p.good ? '<li>' + esc(p.feedback) + '</li>' : '';
       return '<li>' + (p.good ? 'You could also: ' + esc(lower(p.label)) + '.' : esc(p.feedback)) + '</li>';
     }).join('');
-    w.innerHTML = Q('Ticket closed') + '<p class="stage-title" style="margin-top:0">What was wrong</p><p style="margin:0">' + esc(S.debrief.summary) + '</p>' +
+    w.innerHTML = Q('Ticket closed') + '<div class="row" style="margin:0 0 18px"><button class="primary" id="copy">Copy the record</button><span id="copied" class="hint" role="status" style="margin:0">Paste it into your template.</span></div>' + '<p class="stage-title" style="margin-top:0">What was wrong</p><p style="margin:0">' + esc(S.debrief.summary) + '</p>' +
       '<div class="stats"><div class="stat"><b>' + finds.length + '</b><span>questions and checks</span></div><div class="stat"><b>' + key + '</b><span>pointed at the cause</span></div><div class="stat"><b>' + right + '/' + reads.length + '</b><span>results read well</span></div></div>' +
       '<p style="margin:0">' + esc(s) + '</p>' +
       '<p class="stage-title">The checks that mattered most</p><ul class="debrief-list">' + S.debrief.mostInformative.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' +
       '<p class="hint">' + esc(S.debrief.note) + '</p>' +
       (prevFb ? '<p class="stage-title">Keeping it from coming back</p><ul class="debrief-list">' + prevFb + '</ul>' : '') +
-      '<p class="stage-title">For your template</p><p style="margin:0">Copy this record into your template, then answer:</p><ol class="reflect">' + S.reflection.map(r => '<li>' + esc(r) + '</li>').join('') + '</ol>' +
-      '<div class="row"><button class="primary" id="copy">Copy the record</button><span id="copied" class="hint" role="status" style="margin:0"></span></div><pre class="record" id="rec" tabindex="0">' + esc(record()) + '</pre>';
-    $('copy').addEventListener('click', () => {
-      const ok = () => { $('copied').textContent = 'Copied.'; };
-      const fallback = () => { const r = document.createRange(); r.selectNodeContents($('rec')); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); $('copied').textContent = 'Selected. Press Ctrl+C (or Cmd+C) to copy.'; };
-      try { navigator.clipboard.writeText(record()).then(ok, fallback); } catch (e) { fallback(); }
-    });
+      '<p class="stage-title">For your template</p><p style="margin:0">Answer these in your template, under the record you copied:</p><ol class="reflect">' + S.reflection.map(r => '<li>' + esc(r) + '</li>').join('') + '</ol>';
+    $('copy').addEventListener('click', () => copyRecord($('copied')));
+  }
+
+  // Copies the plain-text record (it adds the diagnosis, fix and prevention, and leaves out the check marks)
+  function copyRecord(out) {
+    const text = record(), back = document.activeElement;
+    const fallback = () => {
+      const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+      ta.remove(); if (back) back.focus();
+      out.textContent = ok ? 'Copied.' : "Couldn't copy. Select the record and press Ctrl+C (or Cmd+C).";
+    };
+    try { navigator.clipboard.writeText(text).then(() => { out.textContent = 'Copied.'; }, fallback); } catch (e) { fallback(); }
   }
 
   let firstRender = true;
@@ -366,6 +389,18 @@
     ({ investigate: workInvestigate, diagnose: workDiagnose, fix: workFix, verify: workVerify, debrief: workDebrief })[st.stage]();
     placeFocus();
   }
-  $('restart').addEventListener('click', () => { st = fresh(); save(); render(); window.scrollTo(0, 0); });
+  function renderRestart(asking) {
+    const b = $('restart-box');
+    if (!asking) {
+      b.innerHTML = '<button class="link" id="restart" type="button">Start over</button>';
+      $('restart').addEventListener('click', () => renderRestart(true));
+      return;
+    }
+    b.innerHTML = '<span>Clear your progress and start this ticket over?</span><button class="link" id="restart-yes" type="button">Yes, start over</button><button class="link" id="restart-no" type="button">Cancel</button>';
+    $('restart-yes').addEventListener('click', () => { st = fresh(); save(); renderRestart(false); render(); window.scrollTo(0, 0); $('restart').focus(); });
+    $('restart-no').addEventListener('click', () => { renderRestart(false); $('restart').focus(); });
+    $('restart-yes').focus();
+  }
+  renderRestart(false);
   render();
 })();

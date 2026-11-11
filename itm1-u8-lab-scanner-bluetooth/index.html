@@ -72,7 +72,7 @@
    "result": "\"It beeps, and the red line comes on. It just never shows up on the iPad.\"",
    "note": "The scanner has power and reads the barcode, so a dead battery is unlikely. The number isn't reaching the iPad, which fits the other causes.",
    "pointsTo": null,
-   "weakens": [
+   "mayRuleOut": [
     "battery"
    ]
   },
@@ -136,8 +136,11 @@
    "label": "Turn on the old iPad and open its Bluetooth settings",
    "value": "key",
    "result": "As soon as the old iPad wakes up, its Bluetooth list shows the scanner as Connected. A test scan types a number into the old iPad's notes app.",
-   "note": "This is the check that decides it. The scanner is still connected to the old iPad, so it isn't available to pair with the new one.",
-   "pointsTo": "paired"
+   "note": "This is the check that decides it. The scanner is still connected to the old iPad, so it isn't available to pair with the new one. It's also clearly powered and working.",
+   "pointsTo": "paired",
+   "rulesOut": [
+    "battery"
+   ]
   },
   {
    "id": "act-new",

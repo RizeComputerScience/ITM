@@ -71,12 +71,7 @@
    "value": "key",
    "result": "\"Afternoons. Usually an hour or two after lunch. Mornings are fine.\"",
    "note": "A pattern tied to the time of day points to something in the room that changes, like temperature. A failing part or a software fault would show up at any hour.",
-   "pointsTo": "heat",
-   "weakens": [
-    "psu",
-    "windows",
-    "drive"
-   ]
+   "pointsTo": "heat"
   },
   {
    "id": "ask-change",
@@ -85,10 +80,7 @@
    "value": "key",
    "result": "\"Nothing new on the computer. We did start running a little space heater under the desk a couple of weeks ago, when it got cold.\"",
    "note": "No new software makes a Windows problem less likely, and the heater started about when the shutdowns did.",
-   "pointsTo": "heat",
-   "weakens": [
-    "windows"
-   ]
+   "pointsTo": "heat"
   },
   {
    "id": "ask-screen",
@@ -97,11 +89,7 @@
    "value": "useful",
    "result": "\"No message. The screen just goes black and the fans stop. It comes back when I press the power button.\"",
    "note": "No message and no restart makes a Windows crash or a failing drive less likely. The power simply cutting off fits heat and a failing power supply equally well, so this narrows the list without pointing to one.",
-   "pointsTo": null,
-   "weakens": [
-    "windows",
-    "drive"
-   ]
+   "pointsTo": null
   },
   {
    "id": "look-desk",
@@ -122,7 +110,7 @@
    "result": "System log: four Kernel-Power errors (Event ID 41), \"The system has rebooted without cleanly shutting down first.\" All four are between 1:40 and 3:15 p.m. None has a stop code from a crash.",
    "note": "Event ID 41 says the power cut out without a clean shutdown. It doesn't say why, so it doesn't point to one cause. The missing stop code does make a Windows crash less likely.",
    "pointsTo": null,
-   "weakens": [
+   "mayRuleOut": [
     "windows"
    ]
   },
@@ -136,7 +124,7 @@
    "result": "HWMonitor, with the heater on: 71 °C at idle, then climbing past 100 °C within ten minutes of normal front-desk work. The computer shuts off at 104 °C.",
    "note": "This is the test that decides it. The shutdown comes right as the processor reaches its limit, which is the computer protecting itself from heat.",
    "pointsTo": "heat",
-   "weakens": [
+   "mayRuleOut": [
     "psu"
    ]
   },
@@ -180,10 +168,7 @@
    "requiresText": "Shut it down and unplug it before you open the case to reach the power supply.",
    "result": "The 12 V, 5 V and 3.3 V outputs all read within normal range. You measured them with the computer idle, not under an afternoon's load.",
    "note": "Normal readings make a failing power supply less likely, though a quick test with the computer idle can't rule it out. It doesn't point to another cause on its own.",
-   "pointsTo": null,
-   "weakens": [
-    "psu"
-   ]
+   "pointsTo": null
   },
   {
    "id": "look-updates",
@@ -194,10 +179,7 @@
    "forbiddenText": "The computer is off. Plug it back in and start it first.",
    "result": "Windows is up to date. The last update installed five weeks ago, before the shutdowns started.",
    "note": "Nothing changed in Windows when the shutdowns began, so a Windows problem looks less likely. It doesn't point anywhere else.",
-   "pointsTo": null,
-   "weakens": [
-    "windows"
-   ]
+   "pointsTo": null
   },
   {
    "id": "look-drive",
@@ -207,9 +189,9 @@
    "forbiddenWhen": "unplugged",
    "forbiddenText": "The computer is off. Plug it back in and start it first.",
    "result": "The drive's health report (SMART) says Good, with no reallocated sectors or errors.",
-   "note": "A healthy drive rules out the drive. It doesn't point to any other cause.",
+   "note": "A healthy drive report makes a failing drive very unlikely. It doesn't point to any other cause.",
    "pointsTo": null,
-   "rulesOut": [
+   "mayRuleOut": [
     "drive"
    ]
   },

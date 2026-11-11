@@ -56,7 +56,13 @@ header.top h1 { font: 700 1.4rem/1.25 var(--sans); margin: 0; text-wrap: balance
 .a-ticket .arrive-h { font-weight: 700; margin: 8px 0 2px; }
 .arrive { margin: 0; padding-left: 18px; }
 .a-log { padding-top: 16px; }
-.a-log > h2 { font: 700 1.05rem/1.35 var(--sans); margin: 0 0 10px; }
+.log-head { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; justify-content: space-between; margin: 0 0 10px; }
+.log-head h2 { font: 700 1.05rem/1.35 var(--sans); margin: 0; }
+@media (min-width: 821px) { .log-head { position: sticky; top: -16px; z-index: 1; background: var(--bg); padding: 16px 0 8px; margin: -16px 0 2px; } }
+.log-copy { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+.log-copy .hint { margin: 0; }
+.top-right { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline; }
+.restart { font-size: .88rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
 
 /* The card */
 #work { background: var(--panel); border: 2px solid var(--accent); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; padding: 0; min-width: 0; }
@@ -65,6 +71,8 @@ header.top h1 { font: 700 1.4rem/1.25 var(--sans); margin: 0; text-wrap: balance
   display: grid; grid-template-columns: 1fr auto; column-gap: 12px; row-gap: 2px; align-items: baseline; }
 .hypstrip[hidden] { display: none; }
 .hypstrip .lab { font: 500 .8rem/1.3 var(--sans); color: var(--muted); }
+button.pill { font-size: .84rem; padding: 5px 14px; border: 1px solid var(--accent); color: var(--accent); background: var(--panel); border-radius: 999px; font-weight: 500; }
+.hypstrip { align-items: center; }
 .hypstrip .txt { grid-column: 1 / -1; font-weight: 700; text-wrap: pretty; }
 .hypstrip .txt .gone { text-decoration: line-through; }
 .hypstrip .txt .note { font-weight: 400; color: var(--muted); }
@@ -121,6 +129,7 @@ button.link { border: 0; background: none; color: var(--accent); padding: 0; tex
 .log .say, .log .out { font-size: .86rem; }
 .log .out { font-size: .8rem; }
 .log .rd { color: var(--muted); font-size: .84rem; margin: 4px 0 0; }
+.log .close { border-top: 1px solid var(--line); padding-top: 12px; }
 .log .hl { color: var(--muted); font-size: .84rem; display: flex; gap: 8px; align-items: baseline; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--hyp-line); flex: none; transform: translateY(-1px); }
 .empty { color: var(--muted); font-size: .9rem; margin: 0; }

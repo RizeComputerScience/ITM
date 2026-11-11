@@ -122,11 +122,12 @@
    "label": "Tap MapleStaff in her Wi-Fi settings",
    "value": "key",
    "result": "A box appears: Incorrect password for \"MapleStaff.\" Keisha says she's never typed a password on this phone; it always just connected.",
-   "note": "The network is answering and turning down the password the phone sent. A phone that's out of range or has Wi-Fi off wouldn't get that far.",
+   "note": "The network is answering and turning down the password the phone sent. A phone that's out of range or has Wi-Fi off wouldn't get that far, and a network that's down wouldn't answer.",
    "pointsTo": "password",
    "rulesOut": [
     "off",
-    "range"
+    "range",
+    "network"
    ]
   },
   {
