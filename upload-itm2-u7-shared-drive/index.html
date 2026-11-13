@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Link to the central office · Ticket Bench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../bench/v1/bench.css">
+</head>
+<body>
+<div id="bench"></div>
+<script type="application/json" id="scenario">
+{
+ "id": "itm2-u7-shared-drive",
+ "course": "Unit 7",
+ "ticket": "Ticket",
+ "device": "Link to the central office",
+ "reportedBy": "Fatima Hassan, office manager at Linden Hill",
+ "report": "Since Monday, every file on the shared drive takes forever to open. A spreadsheet that used to open right away takes half a minute, and sometimes it just gives up.",
+ "arrival": [
+  "The staff shared drive is on a server at Westbrook's central office, across town.",
+  "On Monday morning, Andre switched Linden Hill onto the new line to the central office. Before that, the school reached the central office over its internet connection."
+ ],
+ "hypotheses": [
+  {
+   "id": "congestion",
+   "label": "The new link is overloaded with traffic",
+   "name": "congestion on the link"
+  },
+  {
+   "id": "server",
+   "label": "The file server at the central office is overloaded",
+   "name": "the file server"
+  },
+  {
+   "id": "duplex",
+   "label": "The two ends of the new link don't agree on speed and duplex",
+   "name": "a speed or duplex mismatch"
+  },
+  {
+   "id": "dns",
+   "label": "Looking up the server's name is slow",
+   "name": "slow name lookups"
+  }
+ ],
+ "groups": [
+  {
+   "id": "ask",
+   "label": "Ask Fatima",
+   "needsHypothesis": false
+  },
+  {
+   "id": "look",
+   "label": "Look and check",
+   "needsHypothesis": true
+  },
+  {
+   "id": "act",
+   "label": "Make a change",
+   "needsHypothesis": true,
+   "needsRealHypothesis": true
+  }
+ ],
+ "actions": [
+  {
+   "id": "ask-who",
+   "group": "ask",
+   "label": "Is it slow for everyone, or just you?",
+   "value": "useful",
+   "result": "\"Everyone in the office. Tom says the lab computers are slow opening the shared drive too.\"",
+   "note": "It's school-wide, so one computer's settings aren't the problem. It doesn't single out one cause yet.",
+   "pointsTo": null
+  },
+  {
+   "id": "ask-web",
+   "group": "ask",
+   "label": "Are websites slow too?",
+   "value": "useful",
+   "result": "\"No, websites are fine. It's only the shared drive.\"",
+   "note": "Websites go out over the school's internet connection, not the new line, so the trouble is on the way to the central office or at the central office itself. Websites need name lookups too, from the same DNS server, so slow lookups would likely slow websites as well.",
+   "pointsTo": null,
+   "mayRuleOut": [
+    "dns"
+   ]
+  },
+  {
+   "id": "look-other",
+   "group": "look",
+   "label": "Call Maribel: are the other two schools having trouble with the shared drive?",
+   "value": "key",
+   "result": "\"No. I checked with both this morning. Files open normally for them.\"",
+   "note": "The other schools use the same server and the same DNS server without trouble, so an overloaded server is unlikely and a problem with lookups less likely. The problem is on Linden Hill's side, but this doesn't say what it is.",
+   "pointsTo": null,
+   "mayRuleOut": [
+    "server",
+    "dns"
+   ]
+  },
+  {
+   "id": "look-change",
+   "group": "look",
+   "label": "Call Andre: what exactly did you change on Monday?",
+   "value": "useful",
+   "result": "\"I connected the fiber line, moved the school's routes over to it and checked that pings worked. I also set the speed on the central office router's side so it would match the line.\"",
+   "note": "Andre set the speed by hand on one end of the new link right before the trouble started. That points toward how the link is set up, but it doesn't prove anything until you check both ends.",
+   "pointsTo": "duplex"
+  },
+  {
+   "id": "look-ping",
+   "group": "look",
+   "label": "Ping the file server from Fatima's computer (ping -n 20 10.20.0.10)",
+   "value": "useful",
+   "result": "Reply from 10.20.0.10: bytes=32 time=3ms TTL=126\nReply from 10.20.0.10: bytes=32 time=41ms TTL=126\nRequest timed out.\nReply from 10.20.0.10: bytes=32 time=2ms TTL=126\n...\nPackets: Sent = 20, Received = 17, Lost = 3 (15% loss)",
+   "note": "The server answers, but replies are uneven and some are lost, so something on the path is dropping traffic. A full link or a problem with the link could do this; it doesn't single out one. The ping used the server's address, not its name, so name lookups weren't involved.",
+   "pointsTo": null,
+   "mayRuleOut": [
+    "dns"
+   ]
+  },
+  {
+   "id": "look-nslookup",
+   "group": "look",
+   "label": "Look up the file server's name (nslookup files.westbrook.local)",
+   "value": "useful",
+   "result": "Server:  10.20.0.10\nAddress:  10.20.0.10\n\nName:    files.westbrook.local\nAddress:  10.20.0.10\n\n(answered immediately)",
+   "note": "The name turns into the right address right away, so slow name lookups aren't the problem.",
+   "pointsTo": null,
+   "rulesOut": [
+    "dns"
+   ]
+  },
+  {
+   "id": "look-tracert",
+   "group": "look",
+   "label": "Trace the path to the file server (tracert 10.20.0.10)",
+   "value": "useful",
+   "result": "  1    1 ms   1 ms   1 ms  192.168.10.65\n  2    4 ms  38 ms   *     10.0.0.2\n  3    5 ms   3 ms  44 ms  10.20.0.10\nTrace complete.",
+   "note": "The path is the expected one: the campus router, the central office router, then the server. The uneven times and the lost reply start at the far end of the new link, before traffic reaches the server, which makes the server a less likely cause. This doesn't say what's wrong with the link.",
+   "pointsTo": null,
+   "mayRuleOut": [
+    "server",
+    "dns"
+   ]
+  },
+  {
+   "id": "look-load",
+   "group": "look",
+   "label": "Check how busy the link is (Andre's monitoring graph for the new link)",
+   "value": "key",
+   "result": "\"The graph for the new link averages about 3 percent busy since Monday. The highest it's been is 8 percent, Tuesday morning.\"",
+   "note": "The link is barely used, so it isn't full. Congestion is ruled out.",
+   "pointsTo": null,
+   "rulesOut": [
+    "congestion"
+   ]
+  },
+  {
+   "id": "look-campus-if",
+   "group": "look",
+   "label": "Check the campus router's link settings and errors (show interfaces GigabitEthernet0/1)",
+   "value": "key",
+   "result": "GigabitEthernet0/1 is up, line protocol is up\n  Half-duplex, 100Mb/s, media type is RJ45\n  0 input errors, 0 CRC, 0 frame\n  1873 output errors, 2146 collisions, 0 interface resets\n  1873 late collision, 12 deferred",
+   "note": "This end is running half duplex and has nearly 1,900 late collisions. Late collisions on a link between two routers are the sign of a duplex mismatch: one end taking turns while the other doesn't.",
+   "pointsTo": "duplex"
+  },
+  {
+   "id": "look-co-if",
+   "group": "look",
+   "label": "Check the central office router's link settings and errors (show interfaces GigabitEthernet0/0)",
+   "value": "key",
+   "result": "GigabitEthernet0/0 is up, line protocol is up\n  Full-duplex, 100Mb/s, media type is RJ45\n  2391 input errors, 2207 CRC, 0 frame\n  1588 runts, 0 giants\n  0 output errors, 0 collisions",
+   "note": "This end is full duplex and is collecting CRC errors and runts, the damaged and cut-short frames a full-duplex end sees when the other end is running half duplex. Compare it with the campus end.",
+   "pointsTo": "duplex"
+  },
+  {
+   "id": "look-co-config",
+   "group": "look",
+   "label": "Look at the central office router's settings for the link (show running-config interface GigabitEthernet0/0)",
+   "value": "key",
+   "result": "interface GigabitEthernet0/0\n ip address 10.0.0.2 255.255.255.252\n duplex full\n speed 100",
+   "note": "Speed and duplex are set by hand on this end. When one end is set by hand and the other is left on automatic, the automatic end can't work out the duplex and falls back to half. That's a mismatch.",
+   "pointsTo": "duplex"
+  },
+  {
+   "id": "look-server",
+   "group": "look",
+   "label": "Ask Andre to check the file server's load",
+   "value": "useful",
+   "result": "\"CPU is at 7 percent, memory is fine, and the disks aren't busy. Nothing unusual in its logs since Monday.\"",
+   "note": "The server isn't working hard, so it isn't the bottleneck.",
+   "pointsTo": null,
+   "rulesOut": [
+    "server"
+   ]
+  },
+  {
+   "id": "act-restart",
+   "group": "act",
+   "label": "Restart the campus router",
+   "value": "low",
+   "result": "The router restarts in a few minutes, and nobody can reach the shared drive meanwhile. Afterward, files open just as slowly, and a ping to the file server still loses some replies.",
+   "note": "A restart doesn't change how anything is set up, so the problem comes right back. It doesn't single out one cause.",
+   "pointsTo": null
+  },
+  {
+   "id": "act-cable",
+   "group": "act",
+   "label": "Replace the cable between the router and the fiber equipment",
+   "value": "premature",
+   "refusal": "Not yet. Swapping hardware should wait until the evidence points to it. A bad cable usually shows the same kind of errors on both ends, with both ends set up alike; compare the settings and error counters on both ends of the link."
+  },
+  {
+   "id": "act-upgrade",
+   "group": "act",
+   "label": "Ask Westbrook to order a faster line",
+   "value": "premature",
+   "refusal": "Not yet. A faster line only helps if the current one is full. Find out how busy the link is; if it's barely used, a faster line won't help."
+  }
+ ],
+ "minFindingsToDiagnose": 2,
+ "diagnosis": {
+  "correct": "duplex",
+  "feedback": {
+   "congestion": "The link's load is low, so it isn't full. Congestion doesn't fit.",
+   "server": "The other two schools use the same server without trouble, and its load is normal.",
+   "dns": "nslookup turns the server's name into its address right away, so name lookups are fine."
+  },
+  "keyEvidence": [
+   "look-campus-if",
+   "look-co-if",
+   "look-co-config"
+  ],
+  "evidenceFeedback": "Pick a check that shows the two ends disagree: the duplex and error counts on either router, or the hand-set speed and duplex on the central office router."
+ },
+ "fixes": [
+  {
+   "id": "auto",
+   "label": "Set the central office router's link back to automatic speed and duplex, so both ends negotiate together, then clear the counters",
+   "correct": true
+  },
+  {
+   "id": "hardboth",
+   "label": "Set the campus router's end by hand to 100 Mb/s full duplex too",
+   "feedback": "Matching both ends by hand would stop the errors, but then the link depends on both ends staying set by hand, and the next change to one end brings the problem back. Setting the central office end back to automatic lets both ends agree on their own."
+  },
+  {
+   "id": "reload",
+   "label": "Restart both routers",
+   "feedback": "The hand-set speed and duplex are saved in the router's settings, so the mismatch comes back after a restart."
+  },
+  {
+   "id": "line",
+   "label": "Ask Westbrook for a faster line",
+   "feedback": "The link is barely busy. A faster line would have the same mismatch."
+  }
+ ],
+ "verify": "Both ends of the link now show Full-duplex, 100Mb/s. After 15 minutes, the late collision, CRC and runt counters are still at 0. A 20-packet ping to the file server has no loss, and Fatima opens her spreadsheet in about two seconds.",
+ "prevention": [
+  {
+   "id": "log",
+   "label": "Record the link's speed and duplex settings in the change log for the switchover",
+   "good": true,
+   "feedback": "Yes. The next person to touch the link can see how each end is set."
+  },
+  {
+   "id": "check",
+   "label": "After any change to a link, check show interfaces on both ends for duplex and error counts",
+   "good": true,
+   "feedback": "Yes. A minute of checking right after Monday's change would have caught this before anyone noticed."
+  },
+  {
+   "id": "hardall",
+   "label": "Set every port in the network to a fixed speed and duplex by hand",
+   "good": false,
+   "feedback": "No. Hand-set ports are what caused this. Unless both ends are set by hand to match, leave them on automatic."
+  },
+  {
+   "id": "weekly",
+   "label": "Restart the routers every week",
+   "good": false,
+   "feedback": "No. Restarts don't change saved settings, and they interrupt everyone."
+  }
+ ],
+ "debrief": {
+  "summary": "During Monday's switchover, the central office router's end of the new link was set by hand to 100 Mb/s full duplex. The campus end, left on automatic, settled on half duplex, so the two ends talked over each other: late collisions on one side, CRC errors and runts on the other, and lost traffic in between.",
+  "mostInformative": [
+   "Maribel's answer that the other schools are fine: it moved the problem off the server and onto Linden Hill's side.",
+   "The link's low load: it ruled out congestion.",
+   "show interfaces on both routers: half duplex on one end, full on the other, with errors on both."
+  ],
+  "note": "Calling Andre about Monday's change pointed straight at the new link. Many network problems start right after a change."
+ },
+ "reflection": [
+  "What was your first working hypothesis, and what made you keep it or change it?",
+  "Which check decided it, and what evidence justified your fix?"
+ ],
+ "ticketNote": null
+}
+</script>
+<script src="../bench/v1/bench.js"></script>
+</body>
+</html>
