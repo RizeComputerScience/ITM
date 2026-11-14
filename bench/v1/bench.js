@@ -201,8 +201,9 @@
     const q2 = '<fieldset><legend>Does it rule out any cause?</legend><div class="opts">' +
       S.hypotheses.map(x => row(x, 'checkbox', 'o')).join('') +
       '</div><p class="hint" style="margin-top:6px">Leave these blank if it doesn\'t rule anything out.</p></fieldset>';
-    w.innerHTML = Q(esc(a.label)) + '<div style="margin:-6px 0 20px 24px">' + resultHTML(a) + '</div>' +
+    w.innerHTML = Q(esc(a.label)) + '<div id="res" style="margin:-6px 0 20px 24px">' + resultHTML(a) + '</div>' +
       '<form id="read">' + q1 + q2 + '<p class="err" id="read-err" hidden></p><div class="row"><button class="primary" type="submit">Log my read</button></div></form>';
+    flashOnce('r' + st.log.length, [$('res')]);
     $('read').addEventListener('submit', e => {
       e.preventDefault();
       const fd = new FormData(e.target);
@@ -242,16 +243,18 @@
       h += '<div class="actions">' + gActs.map(a => {
         const done = st.done.includes(a.id);
         const needs = (a.requires && !st.flags[a.requires]) || (a.forbiddenWhen && st.flags[a.forbiddenWhen]);
-        return '<button class="action' + (done ? ' done' : '') + '" data-id="' + a.id + '"' + ((locked || done) ? ' disabled' : '') + (needs ? ' data-needs="1"' : '') + '><span>' + esc(a.label) + '</span>' + (done ? '<span class="done-w">Done</span>' : '') + '</button>';
+        // A check that can't be done yet is grayed out, with the reason under its label
+        const why = needs && !locked && !done ? (a.requires && !st.flags[a.requires] ? a.requiresText : a.forbiddenText) : '';
+        return '<button class="action' + (done ? ' done' : '') + (why ? ' blocked' : '') + '" data-id="' + a.id + '"' + ((locked || done || why) ? ' disabled' : '') + '><span>' + esc(a.label) + (why ? '<span class="why">' + esc(why) + '</span>' : '') + '</span>' + (done ? '<span class="done-w">Done</span>' : '') + '</button>';
       }).join('') + '</div></div>';
     });
     const findings = st.done.filter(id => isFinding(act(id))).length;
     h += '<div class="row"><button class="primary" id="go-diag"' + (findings < S.minFindingsToDiagnose ? ' disabled' : '') + '>I know the cause</button>' +
       (findings < S.minFindingsToDiagnose ? '<span class="hint" style="margin:0">Gather at least ' + S.minFindingsToDiagnose + ' findings first.</span>' : '') + '</div>';
     w.innerHTML = h;
+    if (st.lastNote) flashOnce('n' + st.log.length, w.querySelectorAll('.top-fb'));
     w.querySelectorAll('button.action').forEach(b => b.addEventListener('click', () => {
       const a = act(b.dataset.id);
-      if (b.dataset.needs) { w.querySelectorAll('.needs-msg').forEach(n => n.remove()); b.insertAdjacentHTML('afterend', '<p class="needs-msg" role="status">Not done yet. ' + esc(a.requires && !st.flags[a.requires] ? a.requiresText : a.forbiddenText) + '</p>'); return; }
       doAction(b.dataset.id);
     }));
     const fc = $('fb-change'); if (fc) fc.addEventListener('click', openHypChooser);
@@ -375,6 +378,13 @@
     try { navigator.clipboard.writeText(text).then(() => { out.textContent = 'Copied.'; }, fallback); } catch (e) { fallback(); }
   }
 
+  // Highlight new text once; a re-render of the same screen doesn't repeat it
+  let lastFlash = null, ticketFlashed = false;
+  function flashOnce(key, els) {
+    if (key === lastFlash) return;
+    lastFlash = key;
+    els.forEach(el => { if (!el) return; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); });
+  }
   let firstRender = true;
   function placeFocus() {
     if (firstRender) { firstRender = false; return; } // on page load, leave focus at the top so the ticket is read first
@@ -385,6 +395,7 @@
     if (t) { t.setAttribute('tabindex', '-1'); t.focus(); }
   }
   function render() {
+    if (!st.hyp && !st.log.length && !ticketFlashed) { ticketFlashed = true; const tk = document.querySelector('.a-ticket'); tk.classList.remove('flash'); void tk.offsetWidth; tk.classList.add('flash'); }
     renderTicket(); renderHyp(); renderLog();
     ({ investigate: workInvestigate, diagnose: workDiagnose, fix: workFix, verify: workVerify, debrief: workDebrief })[st.stage]();
     placeFocus();
@@ -397,7 +408,7 @@
       return;
     }
     b.innerHTML = '<span>Clear your progress and start this ticket over?</span><button class="link" id="restart-yes" type="button">Yes, start over</button><button class="link" id="restart-no" type="button">Cancel</button>';
-    $('restart-yes').addEventListener('click', () => { st = fresh(); save(); renderRestart(false); render(); window.scrollTo(0, 0); $('restart').focus(); });
+    $('restart-yes').addEventListener('click', () => { st = fresh(); ticketFlashed = false; lastFlash = null; save(); renderRestart(false); render(); window.scrollTo(0, 0); $('restart').focus(); });
     $('restart-no').addEventListener('click', () => { renderRestart(false); $('restart').focus(); });
     $('restart-yes').focus();
   }

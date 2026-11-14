@@ -9,18 +9,19 @@
   --on-accent: #FFFFFF;
   --hyp-line: #FFBB00;    /* Spark: hypothesis only, never text */
   --hyp-bg: #FFF8E1;
+  --flash: #FFF0BF;       /* pale yellow: brief highlight on new text */
   --shadow: 0 1px 2px rgba(20, 26, 34, .06), 0 6px 20px rgba(20, 26, 34, .07);
   --sans: "Poppins", "Segoe UI", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #141A22; --panel: #1C2430; --ink: #F5F7FA; --muted: #C3CAD4; --line: #3C4451;
-  --accent: #4DA3FF; --on-accent: #141A22; --hyp-line: #FFBB00; --hyp-bg: #2E2711;
+  --accent: #4DA3FF; --on-accent: #141A22; --hyp-line: #FFBB00; --hyp-bg: #2E2711; --flash: #3A3114;
   --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .3);
 } }
 :root[data-theme="dark"] {
   --bg: #141A22; --panel: #1C2430; --ink: #F5F7FA; --muted: #C3CAD4; --line: #3C4451;
-  --accent: #4DA3FF; --on-accent: #141A22; --hyp-line: #FFBB00; --hyp-bg: #2E2711;
+  --accent: #4DA3FF; --on-accent: #141A22; --hyp-line: #FFBB00; --hyp-bg: #2E2711; --flash: #3A3114;
   --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .3);
 }
 * { box-sizing: border-box; }
@@ -119,7 +120,8 @@ button.link { border: 0; background: none; color: var(--accent); padding: 0; tex
 .action.done { border-color: transparent; color: var(--muted); background: transparent; }
 .action.done:disabled { cursor: default; }
 .action .done-w { font: 500 .8rem var(--sans); color: var(--muted); flex: none; }
-.needs-msg { color: var(--muted); font-size: .88rem; margin: 2px 0 4px 12px; }
+.action.blocked { color: var(--muted); background: transparent; border-style: dashed; }
+.action .why { display: block; font-size: .82rem; font-weight: 400; margin-top: 2px; }
 .lock { color: var(--muted); font-size: .88rem; margin: 0 0 8px; }
 
 /* Investigation record */
@@ -143,4 +145,11 @@ pre.record { font: .8rem/1.5 var(--mono); border: 1px solid var(--line); border-
 ol.reflect { padding-left: 20px; margin: 6px 0 0; }
 .debrief-list { margin: 6px 0 0; padding-left: 18px; }
 footer.note { color: var(--muted); font-size: .8rem; margin-top: 24px; }
+/* New text (a result, feedback, the ticket at the start) gets a tint that fades, to draw the eye. Off when the student prefers reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .flash { position: relative; isolation: isolate; }
+  .flash::before { content: ""; position: absolute; inset: -10px; border-radius: 8px; background: var(--flash); z-index: -1; pointer-events: none; animation: flash 3s ease-out forwards; }
+  @keyframes flash { 0%, 35% { opacity: 1; } 100% { opacity: 0; } }
+  .a-ticket.flash::before { bottom: 0; } /* stop at the hairline above the record */
+}
 @media (prefers-reduced-motion: no-preference) { .log li.new { animation: in .3s ease-out; } @keyframes in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } } }
