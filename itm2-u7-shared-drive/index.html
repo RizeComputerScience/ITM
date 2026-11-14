@@ -161,7 +161,7 @@
    "group": "look",
    "label": "Check the campus router's link settings and errors (show interfaces GigabitEthernet0/1)",
    "value": "key",
-   "result": "GigabitEthernet0/1 is up, line protocol is up\n  Half-duplex, 100Mb/s, media type is RJ45\n  0 input errors, 0 CRC, 0 frame\n  1873 output errors, 2146 collisions, 0 interface resets\n  1873 late collision, 12 deferred",
+   "result": "GigabitEthernet0/1 is up, line protocol is up (connected)\n  Half Duplex, 100Mbps, link type is auto, media type is RJ45\n  Received 0 broadcasts, 0 runts, 0 giants, 0 throttles\n  0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored, 0 abort\n  1873 output errors, 2146 collisions, 0 interface resets\n  0 babbles, 1873 late collision, 12 deferred",
    "note": "This end is running half duplex and has nearly 1,900 late collisions. Late collisions on a link between two routers are the sign of a duplex mismatch: one end taking turns while the other doesn't.",
    "pointsTo": "duplex"
   },
@@ -170,7 +170,7 @@
    "group": "look",
    "label": "Check the central office router's link settings and errors (show interfaces GigabitEthernet0/0)",
    "value": "key",
-   "result": "GigabitEthernet0/0 is up, line protocol is up\n  Full-duplex, 100Mb/s, media type is RJ45\n  2391 input errors, 2207 CRC, 0 frame\n  1588 runts, 0 giants\n  0 output errors, 0 collisions",
+   "result": "GigabitEthernet0/0 is up, line protocol is up (connected)\n  Full Duplex, 100Mbps, link type is force-up, media type is RJ45\n  Received 0 broadcasts, 1588 runts, 0 giants, 0 throttles\n  2391 input errors, 2207 CRC, 0 frame, 0 overrun, 0 ignored, 0 abort\n  0 output errors, 0 collisions, 0 interface resets\n  0 babbles, 0 late collision, 0 deferred",
    "note": "This end is full duplex and is collecting CRC errors and runts, the damaged and cut-short frames a full-duplex end sees when the other end is running half duplex. Compare it with the campus end.",
    "pointsTo": "duplex"
   },
@@ -256,7 +256,7 @@
    "feedback": "The link is barely busy. A faster line would have the same mismatch."
   }
  ],
- "verify": "Both ends of the link now show Full-duplex, 100Mb/s. After 15 minutes, the late collision, CRC and runt counters are still at 0. A 20-packet ping to the file server has no loss, and Fatima opens her spreadsheet in about two seconds.",
+ "verify": "Both ends of the link now show Full Duplex, 100Mbps. After 15 minutes, the late collision, CRC and runt counters are still at 0. A 20-packet ping to the file server has no loss, and Fatima opens her spreadsheet in about two seconds.",
  "prevention": [
   {
    "id": "log",
