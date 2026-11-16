@@ -1,4 +1,4 @@
-(function(){var m=document.getElementById("bench");if(m&&!m.firstChild){m.outerHTML="<main class=\"wrap\">\n  <header class=\"top\">\n    <h1>Ticket Bench</h1>\n    <div class=\"top-right\">\n      <span class=\"tag\" id=\"course\">Prototype</span>\n      <div class=\"restart\" id=\"restart-box\"></div>\n    </div>\n  </header>\n  <div class=\"grid\">\n    <div class=\"a-side\">\n      <section class=\"a-ticket\" aria-labelledby=\"t-h\">\n        <h2 id=\"t-h\"></h2>\n        <p class=\"who\" id=\"twho\"></p>\n        <p class=\"report\" id=\"treport\"></p>\n        <div id=\"tmore\">\n          <p class=\"arrive-h\">When you arrive</p>\n          <ul class=\"arrive\" id=\"tarrive\"></ul>\n        </div>\n        <button class=\"link\" id=\"ttoggle\" type=\"button\" aria-controls=\"tmore\"></button>\n      </section>\n      <section class=\"a-log\" aria-labelledby=\"l-h\" tabindex=\"0\">\n        <div class=\"log-head\"><h2 id=\"l-h\">Investigation record</h2><div class=\"log-copy\" id=\"log-copy\"></div></div>\n        <ol class=\"log\" id=\"log\"></ol>\n        <p class=\"empty\" id=\"log-empty\">Nothing yet. Each question you ask and check you run shows up here with its result.</p>\n      </section>\n    </div>\n    <div class=\"a-work\">\n      <section id=\"work\" aria-label=\"Next step\">\n        <div class=\"hypstrip\" id=\"hyp\" role=\"region\" aria-label=\"Hypothesis\"></div>\n        <div class=\"wbody\" id=\"wbody\"></div>\n      </section>\n    </div>\n  </div>\n  <p id=\"sr-status\" class=\"sr\" role=\"status\" aria-live=\"polite\"></p>\n  <footer class=\"note\">Your progress is kept only in this browser so a reload doesn't lose it. Nothing is sent anywhere.</footer>\n</main>";}})();
+(function(){var m=document.getElementById("bench");if(m&&!m.firstChild){m.outerHTML="<main class=\"wrap\">\n  <header class=\"top\">\n    <h1>Ticket Bench</h1>\n    <div class=\"top-right\">\n      <span class=\"tag\" id=\"course\">Prototype</span>\n      <div class=\"restart\" id=\"restart-box\"></div>\n    </div>\n  </header>\n  <div class=\"grid\">\n    <div class=\"a-side\">\n      <section class=\"a-ticket\" aria-labelledby=\"t-h\">\n        <h2 id=\"t-h\"></h2>\n        <p class=\"who\" id=\"twho\"></p>\n        <p class=\"report\" id=\"treport\"></p>\n        <div id=\"tmore\">\n          <p class=\"arrive-h\">When you arrive</p>\n          <ul class=\"arrive\" id=\"tarrive\"></ul>\n        </div>\n        <button class=\"link\" id=\"ttoggle\" type=\"button\" aria-controls=\"tmore\"></button>\n      </section>\n      <section class=\"a-log\" aria-labelledby=\"l-h\" tabindex=\"0\">\n        <div class=\"log-head\"><h2 id=\"l-h\">Case record</h2><div class=\"log-copy\" id=\"log-copy\"></div></div>\n        <ol class=\"log\" id=\"log\"></ol>\n        <p class=\"empty\" id=\"log-empty\">Nothing yet. Each question you ask and check you run shows up here with its result.</p>\n      </section>\n    </div>\n    <div class=\"a-work\">\n      <section id=\"work\" aria-label=\"Next step\">\n        <div class=\"hypstrip\" id=\"hyp\" role=\"region\" aria-label=\"Hypothesis\"></div>\n        <div class=\"wbody\" id=\"wbody\"></div>\n      </section>\n    </div>\n  </div>\n  <p id=\"sr-status\" class=\"sr\" role=\"status\" aria-live=\"polite\"></p>\n  <footer class=\"note\">Your progress is kept only in this browser so a reload doesn't lose it. Nothing is sent anywhere.</footer>\n</main>";}})();
 (function () {
   if (!document.documentElement.lang) document.documentElement.lang = 'en';
   const S = JSON.parse(document.getElementById('scenario').textContent);
@@ -156,7 +156,7 @@
     $('log').innerHTML = items.join('');
     const lc = $('log-copy');
     if (st.stage === 'debrief') {
-      lc.innerHTML = '<button class="pill" type="button" id="copy-log">Copy the record</button><span class="hint" id="copied-log" role="status"></span>';
+      lc.innerHTML = '<button class="pill" type="button" id="copy-log">Copy the case record</button><span class="hint" id="copied-log" role="status"></span>';
       $('copy-log').addEventListener('click', () => copyRecord($('copied-log')));
     } else lc.innerHTML = '';
     $('log-empty').hidden = st.log.length > 0;
@@ -355,13 +355,13 @@
       if (chose === p.good) return p.good ? '<li>' + esc(p.feedback) + '</li>' : '';
       return '<li>' + (p.good ? 'You could also: ' + esc(lower(p.label)) + '.' : esc(p.feedback)) + '</li>';
     }).join('');
-    w.innerHTML = Q('Ticket closed') + '<div class="row" style="margin:0 0 18px"><button class="primary" id="copy">Copy the record</button><span id="copied" class="hint" role="status" style="margin:0">Paste it into your template.</span></div>' + '<p class="stage-title" style="margin-top:0">What was wrong</p><p style="margin:0">' + esc(S.debrief.summary) + '</p>' +
+    w.innerHTML = Q('Ticket closed') + '<div class="row" style="margin:0 0 18px"><button class="primary" id="copy">Copy the case record</button><span id="copied" class="hint" role="status" style="margin:0">Paste it into your template.</span></div>' + '<p class="stage-title" style="margin-top:0">What was wrong</p><p style="margin:0">' + esc(S.debrief.summary) + '</p>' +
       '<div class="stats"><div class="stat"><b>' + finds.length + '</b><span>questions and checks</span></div><div class="stat"><b>' + key + '</b><span>pointed at the cause</span></div><div class="stat"><b>' + right + '/' + reads.length + '</b><span>results read well</span></div></div>' +
       '<p style="margin:0">' + esc(s) + '</p>' +
       '<p class="stage-title">The checks that mattered most</p><ul class="debrief-list">' + S.debrief.mostInformative.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' +
       '<p class="hint">' + esc(S.debrief.note) + '</p>' +
       (prevFb ? '<p class="stage-title">Keeping it from coming back</p><ul class="debrief-list">' + prevFb + '</ul>' : '') +
-      '<p class="stage-title">For your template</p><p style="margin:0">Answer these in your template, under the record you copied:</p><ol class="reflect">' + S.reflection.map(r => '<li>' + esc(r) + '</li>').join('') + '</ol>';
+      '<p class="stage-title">For your template</p><p style="margin:0">Answer these in your template, under the case record you copied:</p><ol class="reflect">' + S.reflection.map(r => '<li>' + esc(r) + '</li>').join('') + '</ol>';
     $('copy').addEventListener('click', () => copyRecord($('copied')));
   }
 
@@ -373,7 +373,7 @@
       document.body.appendChild(ta); ta.select();
       let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
       ta.remove(); if (back) back.focus();
-      out.textContent = ok ? 'Copied.' : "Couldn't copy. Select the record and press Ctrl+C (or Cmd+C).";
+      out.textContent = ok ? 'Copied.' : "Couldn't copy. Select the case record and press Ctrl+C (or Cmd+C).";
     };
     try { navigator.clipboard.writeText(text).then(() => { out.textContent = 'Copied.'; }, fallback); } catch (e) { fallback(); }
   }

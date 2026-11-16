@@ -1,4 +1,4 @@
-/* Layout (November 2026 redesign): the left column (ticket, investigation record) is plain text on the page; the right column is the only card, and every decision happens in it. Blue means clickable; yellow means the hypothesis. See Ticket Bench Design Decisions. */
+/* Layout (November 2026 redesign): the left column (ticket, case record) is plain text on the page; the right column is the only card, and every decision happens in it. Blue means clickable; yellow means the hypothesis. See Ticket Bench Design Decisions. */
 :root {
   --bg: #F5F7FA;          /* Quiet Clarity */
   --panel: #FFFFFF;
@@ -126,7 +126,7 @@ button.link { border: 0; background: none; color: var(--accent); padding: 0; tex
 .action .why { display: block; font-size: .82rem; font-weight: 400; margin-top: 2px; }
 .lock { color: var(--muted); font-size: .88rem; margin: 0 0 8px; }
 
-/* Investigation record */
+/* Case record */
 .log { display: flex; flex-direction: column; gap: 14px; margin: 0; padding: 0; list-style: none; }
 .log li { min-width: 0; }
 .log .q { font-weight: 700; font-size: .92rem; }
