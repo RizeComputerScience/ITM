@@ -26,9 +26,9 @@
   const Q = (t, id) => '<h2 class="q"' + (id ? ' id="' + id + '"' : '') + '>' + CHEV + '<span>' + t + '</span></h2>';
 
   // Causes the evidence has ruled out so far (only results the student has already read)
-  const ruledOut = (except) => {
+  const ruledOut = (before) => {
     const s = new Set();
-    st.log.forEach(e => { if (e.type === 'action' && e.read && e !== except) (act(e.id).rulesOut || []).forEach(h => s.add(h)); });
+    for (const e of st.log) { if (e === before) break; if (e.type === 'action' && e.read) (act(e.id).rulesOut || []).forEach(h => s.add(h)); }
     return s;
   };
   // What a correct read looks like: the cause the result points toward, the causes it clearly rules out, and any it arguably rules out (mayRuleOut: checked or not, either is fine).
