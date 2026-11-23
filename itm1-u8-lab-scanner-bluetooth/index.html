@@ -7,7 +7,7 @@
 <title>Lab barcode scanner · Ticket Bench</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="../bench/v1/bench.css">
+<link rel="stylesheet" href="../bench/v2/bench.css">
 </head>
 <body>
 <div id="bench"></div>
@@ -172,14 +172,14 @@
  },
  "fixes": [
   {
-   "id": "repair",
-   "label": "On the old iPad, tap Forget This Device for the scanner and turn the iPad off. Then scan the scanner's Unpair barcode and its Pairing Mode barcode, and pair it with the new iPad in Settings, Bluetooth.",
-   "correct": true
-  },
-  {
    "id": "keepold",
    "label": "Keep the old iPad turned on in the lab so the scanner works",
    "feedback": "That leaves the lab app on the new iPad still typing by hand, and an extra device with patient data sitting out. Move the pairing to the new iPad."
+  },
+  {
+   "id": "repair",
+   "label": "On the old iPad, forget the scanner. Then scan the scanner's Unpair and Pairing Mode barcodes and pair it with the new iPad",
+   "correct": true
   },
   {
    "id": "newscanner",
@@ -195,6 +195,12 @@
  "verify": "The new iPad lists the scanner as Connected under My Devices. Marcus scans the test barcode on the lab's practice label, and the test patient number fills in on the lab app. The old iPad no longer lists the scanner.",
  "prevention": [
   {
+   "id": "btoff",
+   "label": "Keep Bluetooth turned off on the clinic's iPads except when pairing",
+   "good": false,
+   "feedback": "No. The scanner and keyboard need Bluetooth on to work."
+  },
+  {
    "id": "retire",
    "label": "Add a step to the routine for retiring a device: forget its Bluetooth accessories, then wipe it and lock it away",
    "good": true,
@@ -205,12 +211,6 @@
    "label": "Put a small label on the scanner naming the iPad it's paired with",
    "good": true,
    "feedback": "Yes. The next person to look at it knows where to check first."
-  },
-  {
-   "id": "btoff",
-   "label": "Keep Bluetooth turned off on the clinic's iPads except when pairing",
-   "good": false,
-   "feedback": "No. The scanner and keyboard need Bluetooth on to work."
   },
   {
    "id": "spare",
@@ -236,6 +236,6 @@
  "ticketNote": null
 }
 </script>
-<script src="../bench/v1/bench.js"></script>
+<script src="../bench/v2/bench.js"></script>
 </body>
 </html>
