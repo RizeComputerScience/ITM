@@ -7,7 +7,7 @@
 <title>Exam room laptop · Ticket Bench</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="../bench/v1/bench.css">
+<link rel="stylesheet" href="../bench/v2/bench.css">
 </head>
 <body>
 <div id="bench"></div>
@@ -188,14 +188,14 @@
  },
  "fixes": [
   {
-   "id": "raise",
-   "label": "Turn the brightness up with the brightness keys or the slider in Display settings, then unplug the external monitor",
-   "correct": true
-  },
-  {
    "id": "driver",
    "label": "Reinstall the display driver",
    "feedback": "The driver is fine; the picture reaches the external monitor. Reinstalling it won't change the brightness setting."
+  },
+  {
+   "id": "raise",
+   "label": "Turn the brightness up, then unplug the external monitor",
+   "correct": true
   },
   {
    "id": "replace",
@@ -217,16 +217,16 @@
    "feedback": "Yes. A locked or closed laptop ignores stray key presses, and it protects patient records while the screen is unattended."
   },
   {
-   "id": "keys",
-   "label": "Show her which keys turn the brightness up and down",
-   "good": true,
-   "feedback": "Yes. If it happens again, she can fix it herself in seconds."
-  },
-  {
    "id": "disable",
    "label": "Turn off the brightness keys in the firmware settings",
    "good": false,
    "feedback": "No. That takes away a control she needs and doesn't stop other stray key presses."
+  },
+  {
+   "id": "keys",
+   "label": "Show her which keys turn the brightness up and down",
+   "good": true,
+   "feedback": "Yes. If it happens again, she can fix it herself in seconds."
   },
   {
    "id": "no-wipe",
@@ -251,6 +251,6 @@
  "ticketNote": null
 }
 </script>
-<script src="../bench/v1/bench.js"></script>
+<script src="../bench/v2/bench.js"></script>
 </body>
 </html>
