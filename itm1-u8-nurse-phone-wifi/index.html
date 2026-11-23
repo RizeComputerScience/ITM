@@ -7,7 +7,7 @@
 <title>On-call nurse&#x27;s phone · Ticket Bench</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="../bench/v1/bench.css">
+<link rel="stylesheet" href="../bench/v2/bench.css">
 </head>
 <body>
 <div id="bench"></div>
@@ -169,11 +169,6 @@
  },
  "fixes": [
   {
-   "id": "rejoin",
-   "label": "Tap the info button next to MapleStaff, choose Forget This Network, then tap MapleStaff and join with the new password Dana gave you",
-   "correct": true
-  },
-  {
    "id": "reset",
    "label": "Reset the phone's network settings, then join MapleStaff",
    "feedback": "That would work in the end, but it erases every other saved network and setting first. Forgetting this one network and joining again is all this needs."
@@ -187,6 +182,11 @@
    "id": "ap",
    "label": "Restart the access point",
    "feedback": "The access point is working; Tony's phone is on it. A restart won't change the password Keisha's phone has saved."
+  },
+  {
+   "id": "rejoin",
+   "label": "Forget MapleStaff on the phone, then join it again with the new password from Dana",
+   "correct": true
   }
  ],
  "verify": "The phone joins MapleStaff, and the Wi-Fi symbol appears at the top of the screen where 5G was (the cell bars stay). With cellular data turned off for a moment, the records app still loads, so it's using Wi-Fi.",
@@ -198,16 +198,16 @@
    "feedback": "Yes. Devices of staff who are out that day are the ones that get missed."
   },
   {
-   "id": "icon",
-   "label": "Show Keisha how to tell from the status bar whether she's on Wi-Fi or cellular",
-   "good": true,
-   "feedback": "Yes. She'd have spotted this on Monday instead of when her data ran low."
-  },
-  {
    "id": "nopassword",
    "label": "Remove the password from MapleStaff so this can't happen",
    "good": false,
    "feedback": "No. An open staff network lets anyone nearby join it, and it carries patient information."
+  },
+  {
+   "id": "icon",
+   "label": "Show Keisha how to tell from the status bar whether she's on Wi-Fi or cellular",
+   "good": true,
+   "feedback": "Yes. She'd have spotted this on Monday instead of when her data ran low."
   },
   {
    "id": "nochange",
@@ -233,6 +233,6 @@
  "ticketNote": null
 }
 </script>
-<script src="../bench/v1/bench.js"></script>
+<script src="../bench/v2/bench.js"></script>
 </body>
 </html>
