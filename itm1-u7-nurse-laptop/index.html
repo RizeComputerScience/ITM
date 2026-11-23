@@ -7,7 +7,7 @@
 <title>Nurse&#x27;s laptop · Ticket Bench</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="../bench/v1/bench.css">
+<link rel="stylesheet" href="../bench/v2/bench.css">
 </head>
 <body>
 <div id="bench"></div>
@@ -178,11 +178,6 @@
  },
  "fixes": [
   {
-   "id": "replace",
-   "label": "Order a replacement battery from the laptop's maker, and keep the charger on the cart until it arrives",
-   "correct": true
-  },
-  {
    "id": "saver",
    "label": "Leave battery saver on and lower the brightness",
    "feedback": "That helps a little, but a battery that holds a third of its charge still won't last a shift. Replace the battery."
@@ -191,6 +186,11 @@
    "id": "newlaptop",
    "label": "Replace the whole laptop",
    "feedback": "The rest of the laptop works fine and matches the other nurses'. A new battery fixes this for much less."
+  },
+  {
+   "id": "replace",
+   "label": "Order a replacement battery, and keep the charger on the cart until it arrives",
+   "correct": true
   },
   {
    "id": "drain",
@@ -207,12 +207,6 @@
    "feedback": "Yes. The other nurses' laptops are the same age, so their batteries are likely wearing too."
   },
   {
-   "id": "care",
-   "label": "Turn on the maker's battery-care setting, if it has one, that stops charging short of 100% when the laptop is plugged in for long stretches",
-   "good": true,
-   "feedback": "Yes. Sitting at a full charge for hours wears a battery faster."
-  },
-  {
    "id": "weekly-drain",
    "label": "Drain the battery completely every week",
    "good": false,
@@ -223,6 +217,12 @@
    "label": "Never charge it overnight",
    "good": false,
    "feedback": "No. Sam needs a full charge to start the shift. A battery-care setting handles long charging better."
+  },
+  {
+   "id": "care",
+   "label": "Turn on the maker's battery-care setting, if it has one, that stops charging short of 100% when the laptop is plugged in for long stretches",
+   "good": true,
+   "feedback": "Yes. Sitting at a full charge for hours wears a battery faster."
   }
  ],
  "debrief": {
@@ -241,6 +241,6 @@
  "ticketNote": null
 }
 </script>
-<script src="../bench/v1/bench.js"></script>
+<script src="../bench/v2/bench.js"></script>
 </body>
 </html>
