@@ -7,7 +7,7 @@
 <title>Front desk computer · Ticket Bench</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="../bench/v1/bench.css">
+<link rel="stylesheet" href="../bench/v2/bench.css">
 </head>
 <body>
 <div id="bench"></div>
@@ -227,11 +227,6 @@
  },
  "fixes": [
   {
-   "id": "clean-move",
-   "label": "Blow the dust out of the intake, fans and cooler with compressed air, and move the tower out of the corner and away from the heater",
-   "correct": true
-  },
-  {
    "id": "new-cooler",
    "label": "Replace the processor cooler with a bigger one",
    "feedback": "That's more than this needs. The cooler works; it's clogged. Clean it first, and replace it only if temperatures stay high."
@@ -245,10 +240,21 @@
    "id": "slow",
    "label": "Lower the processor's speed in the firmware settings so it runs cooler",
    "feedback": "That hides the symptom and leaves Tony with a slower computer. Fix what's making it hot."
+  },
+  {
+   "id": "clean-move",
+   "label": "Clean the dust out of the fans and cooler, and move the tower out of the corner and away from the heater",
+   "correct": true
   }
  ],
  "verify": "After cleaning and moving the tower, HWMonitor shows the processor peaking at 68 °C during the same afternoon work, with the heater on across the room. The computer runs from noon to closing without shutting off, and the records system and label printer both work.",
  "prevention": [
+  {
+   "id": "psu-anyway",
+   "label": "Replace the power supply anyway, to be safe",
+   "good": false,
+   "feedback": "No. The power supply tested fine, and the shutdowns stopped once the heat was dealt with."
+  },
   {
    "id": "schedule",
    "label": "Add the front desk computer to a cleaning schedule every few months",
@@ -260,12 +266,6 @@
    "label": "Keep the tower out of the corner, with space around it and the heater pointed away",
    "good": true,
    "feedback": "Yes. This deals with the conditions that started it."
-  },
-  {
-   "id": "psu-anyway",
-   "label": "Replace the power supply anyway, to be safe",
-   "good": false,
-   "feedback": "No. The power supply tested fine, and the shutdowns stopped once the heat was dealt with."
   },
   {
    "id": "no-updates",
@@ -290,6 +290,6 @@
  "ticketNote": null
 }
 </script>
-<script src="../bench/v1/bench.js"></script>
+<script src="../bench/v2/bench.js"></script>
 </body>
 </html>
